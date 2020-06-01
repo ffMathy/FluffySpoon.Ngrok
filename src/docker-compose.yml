@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  sample:
+    build:
+      context: .
+      dockerfile: FluffySpoon.AspNet.NGrok.Sample/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"

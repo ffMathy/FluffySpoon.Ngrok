@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FluffySpoon.AspNet.NGrok.NGrokModels;
-using FluffySpoon.AspNet.NGrok.Services;
+using FluffySpoon.AspNet.Ngrok.Models;
+using FluffySpoon.AspNet.Ngrok.Services;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace FluffySpoon.AspNet.NGrok
+namespace FluffySpoon.AspNet.Ngrok
 {
-    class NGrokHostedService : INGrokHostedService
+    class NgrokHostedService : INgrokHostedService
     {
-        private readonly NGrokApiClient _apiClient;
+        private readonly NgrokApiClient _apiClient;
         private readonly NgrokOptions _options;
-        private readonly NGrokDownloader _nGrokDownloader;
-        private readonly ILogger<NGrokHostedService> _logger;
+        private readonly NgrokDownloader _nGrokDownloader;
+        private readonly ILogger<NgrokHostedService> _logger;
 
         private readonly TaskCompletionSource<IReadOnlyCollection<Tunnel>> _tunnelTaskSource;
         private readonly TaskCompletionSource<IReadOnlyCollection<string>> _serverAddressesSource;
@@ -35,11 +33,11 @@ namespace FluffySpoon.AspNet.NGrok
 
         public event Action<IEnumerable<Tunnel>> Ready;
 
-        public NGrokHostedService(
-            NGrokApiClient apiClient,
+        public NgrokHostedService(
+            NgrokApiClient apiClient,
             NgrokOptions options,
-            NGrokDownloader nGrokDownloader,
-            ILogger<NGrokHostedService> logger)
+            NgrokDownloader nGrokDownloader,
+            ILogger<NgrokHostedService> logger)
         {
             _apiClient = apiClient;
             _options = options;
@@ -90,7 +88,7 @@ namespace FluffySpoon.AspNet.NGrok
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occured while running the NGrok service.");
+                _logger.LogError(ex, "An error occured while running the Ngrok service.");
             }
             finally
             {
@@ -131,7 +129,7 @@ namespace FluffySpoon.AspNet.NGrok
                 var addresses = await WaitForTaskWithTimeout(
                     _serverAddressesSource.Task,
                     30000,
-                    $"No {nameof(NgrokOptions.ApplicationHttpUrl)} was set in the settings, and the URL of the server could not be inferred within 30 seconds. Perhaps you are missing a call to {nameof(NGrokAspNetCoreExtensions.UseNGrokAutomaticUrlDetection)} in your Configure method of your Startup class?");
+                    $"No {nameof(NgrokOptions.ApplicationHttpUrl)} was set in the settings, and the URL of the server could not be inferred within 30 seconds. Perhaps you are missing a call to {nameof(NgrokAspNetCoreExtensions.UseNgrokAutomaticUrlDetection)} in your Configure method of your Startup class?");
                 if (addresses != null)
                 {
                     url = addresses.FirstOrDefault(a => a.StartsWith("http://")) ?? addresses.FirstOrDefault();
@@ -155,7 +153,7 @@ namespace FluffySpoon.AspNet.NGrok
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _cancellationTokenSource.Cancel();
-            _apiClient.StopNGrok();
+            _apiClient.StopNgrok();
 
             await _shutdownSource.Task;
         }

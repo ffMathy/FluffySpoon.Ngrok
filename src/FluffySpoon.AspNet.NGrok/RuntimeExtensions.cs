@@ -3,18 +3,18 @@
 // Copyright (c) 2019 Kevin Gysberg
 
 using System.Runtime.InteropServices;
-using FluffySpoon.AspNet.NGrok.Exceptions;
+using FluffySpoon.AspNet.Ngrok.Exceptions;
 
-namespace FluffySpoon.AspNet.NGrok
+namespace FluffySpoon.AspNet.Ngrok
 {
 	public static class RuntimeExtensions
 	{
 		/// <summary>
-		/// Get architecture string format used by NGrok cdn
+		/// Get architecture string format used by Ngrok cdn
 		/// </summary>
-		/// <exception cref="NGrokUnsupportedException">Throws if platform not supported by NGrok</exception>
+		/// <exception cref="NgrokUnsupportedException">Throws if platform not supported by Ngrok</exception>
 		/// <returns></returns>
-		public static string GetArchitectureString()
+		private static string GetArchitectureString()
 		{
 			var architecture = RuntimeInformation.ProcessArchitecture;
 			switch (architecture)
@@ -22,13 +22,13 @@ namespace FluffySpoon.AspNet.NGrok
 				case Architecture.Arm:
 					if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 					{
-						throw new NGrokUnsupportedException();
+						throw new NgrokUnsupportedException();
 					}
 					return "arm";
 				case Architecture.Arm64:
 					if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 					{
-						throw new NGrokUnsupportedException();
+						throw new NgrokUnsupportedException();
 					}
 					return "arm64";
 				case Architecture.X64:
@@ -36,16 +36,16 @@ namespace FluffySpoon.AspNet.NGrok
 				case Architecture.X86:
 					return "386";
 				default:
-					throw new NGrokUnsupportedException();
+					throw new NgrokUnsupportedException();
 			}
 		}
 
 		/// <summary>
-		/// Get OS string format used by NGrok cdn
+		/// Get OS string format used by Ngrok cdn
 		/// </summary>
-		/// <exception cref="NGrokUnsupportedException">Throws if platform not supported by NGrok</exception>
+		/// <exception cref="NgrokUnsupportedException">Throws if platform not supported by Ngrok</exception>
 		/// <returns></returns>
-		public static string GetOsString()
+		private static string GetOsString()
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
@@ -59,13 +59,13 @@ namespace FluffySpoon.AspNet.NGrok
 			{
 				return "darwin";
 			}
-			throw new NGrokUnsupportedException();
+			throw new NgrokUnsupportedException();
 		}
 
 		/// <summary>
-		/// Get OS-Architecture string format used by NGrok cdn
+		/// Get OS-Architecture string format used by Ngrok cdn
 		/// </summary>
-		/// <exception cref="NGrokUnsupportedException">Throws if platform not supported by NGrok</exception>
+		/// <exception cref="NgrokUnsupportedException">Throws if platform not supported by Ngrok</exception>
 		/// <returns></returns>
 		public static string GetOsArchitectureString()
 		{

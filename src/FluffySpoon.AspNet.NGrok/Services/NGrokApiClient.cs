@@ -8,26 +8,25 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FluffySpoon.AspNet.NGrok.Exceptions;
-using FluffySpoon.AspNet.NGrok.NGrokModels;
+using FluffySpoon.AspNet.Ngrok.Exceptions;
+using FluffySpoon.AspNet.Ngrok.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace FluffySpoon.AspNet.NGrok.Services
+namespace FluffySpoon.AspNet.Ngrok.Services
 {
-    public class NGrokApiClient
+    public class NgrokApiClient
     {
         private readonly HttpClient _nGrokApi;
         private readonly ILogger _logger;
-        private readonly NGrokProcess _nGrokProcess;
+        private readonly NgrokProcess _nGrokProcess;
         private readonly NgrokOptions _options;
 
-        public NGrokApiClient(HttpClient httpClient, NGrokProcess nGrokProcess, NgrokOptions options, ILogger<NGrokApiClient> logger)
+        public NgrokApiClient(HttpClient httpClient, NgrokProcess nGrokProcess, NgrokOptions options, ILogger<NgrokApiClient> logger)
         {
             _nGrokApi = httpClient;
             _options = options;
@@ -42,7 +41,7 @@ namespace FluffySpoon.AspNet.NGrok.Services
 
         internal async Task<IEnumerable<Tunnel>?> StartTunnelsAsync(string url, CancellationToken cancellationToken)
         {
-            await StartNGrokAsync(cancellationToken);
+            await StartNgrokAsync(cancellationToken);
 
             if (await HasTunnelByAddressAsync(url, cancellationToken))
                 return await GetTunnelListAsync(cancellationToken);
@@ -69,9 +68,9 @@ namespace FluffySpoon.AspNet.NGrok.Services
         }
 
         /// <returns></returns>
-        private async Task StartNGrokAsync(CancellationToken cancellationToken)
+        private async Task StartNgrokAsync(CancellationToken cancellationToken)
         {
-            _nGrokProcess.StartNGrokProcess();
+            _nGrokProcess.StartNgrokProcess();
 
             try
             {
@@ -85,16 +84,16 @@ namespace FluffySpoon.AspNet.NGrok.Services
 
                 if (!canGetTunnelList)
                 {
-                    throw new Exception("A timeout occured while waiting for the NGrok process.");
+                    throw new Exception("A timeout occured while waiting for the Ngrok process.");
                 }
             }
             catch (Exception ex)
             {
-                throw new NGrokStartFailedException(ex);
+                throw new NgrokStartFailedException(ex);
             }
         }
 
-        internal void StopNGrok()
+        internal void StopNgrok()
         {
             _nGrokProcess.Stop();
         }
@@ -114,7 +113,7 @@ namespace FluffySpoon.AspNet.NGrok.Services
                     return null;
 
                 var responseText = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonConvert.DeserializeObject<NGrokTunnelsApiResponse>(responseText);
+                var apiResponse = JsonConvert.DeserializeObject<NgrokTunnelsApiResponse>(responseText);
                 return apiResponse.Tunnels;
             }
             catch (HttpRequestException)
@@ -127,7 +126,7 @@ namespace FluffySpoon.AspNet.NGrok.Services
         {
             var url = new Uri(address);
 
-            var request = new NGrokTunnelApiRequest
+            var request = new NgrokTunnelApiRequest
             {
                 Name = projectName,
                 Addr = url.Host + ":" + url.Port,
@@ -149,7 +148,7 @@ namespace FluffySpoon.AspNet.NGrok.Services
                 if (response.IsSuccessStatusCode)
                     return JsonConvert.DeserializeObject<Tunnel>(responseText);
 
-                var error = JsonConvert.DeserializeObject<NGrokErrorApiResult>(responseText);
+                var error = JsonConvert.DeserializeObject<NgrokErrorApiResult>(responseText);
 
                 var ERROR_CODE_NGROK_NOT_READY_TO_START_TUNNELS = 104;
                 if (error.ErrorCode == ERROR_CODE_NGROK_NOT_READY_TO_START_TUNNELS)

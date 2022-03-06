@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using FluffySpoon.AspNet.NGrok.NGrokModels;
+using FluffySpoon.AspNet.Ngrok.Models;
 using Microsoft.Extensions.Hosting;
 
-namespace FluffySpoon.AspNet.NGrok
+namespace FluffySpoon.AspNet.Ngrok
 {
-    public interface INGrokHostedService : IHostedService
+    public interface INgrokHostedService : IHostedService
     {
         Task<IReadOnlyCollection<Tunnel>> GetTunnelsAsync();
 

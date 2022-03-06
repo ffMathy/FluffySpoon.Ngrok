@@ -7,17 +7,17 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["FluffySpoon.AspNet.NGrok.Sample/FluffySpoon.AspNet.NGrok.Sample.csproj", "FluffySpoon.AspNet.NGrok.Sample/"]
-COPY ["FluffySpoon.AspNet.NGrok/FluffySpoon.AspNet.NGrok.csproj", "FluffySpoon.AspNet.NGrok/"]
-RUN dotnet restore "FluffySpoon.AspNet.NGrok.Sample/FluffySpoon.AspNet.NGrok.Sample.csproj"
+COPY ["FluffySpoon.AspNet.Ngrok.Sample/FluffySpoon.AspNet.Ngrok.Sample.csproj", "FluffySpoon.AspNet.Ngrok.Sample/"]
+COPY ["FluffySpoon.AspNet.Ngrok/FluffySpoon.AspNet.Ngrok.csproj", "FluffySpoon.AspNet.Ngrok/"]
+RUN dotnet restore "FluffySpoon.AspNet.Ngrok.Sample/FluffySpoon.AspNet.Ngrok.Sample.csproj"
 COPY . .
-WORKDIR "/src/FluffySpoon.AspNet.NGrok.Sample"
-RUN dotnet build "FluffySpoon.AspNet.NGrok.Sample.csproj" -c Release -o /app/build
+WORKDIR "/src/FluffySpoon.AspNet.Ngrok.Sample"
+RUN dotnet build "FluffySpoon.AspNet.Ngrok.Sample.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "FluffySpoon.AspNet.NGrok.Sample.csproj" -c Release -o /app/publish
+RUN dotnet publish "FluffySpoon.AspNet.Ngrok.Sample.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "FluffySpoon.AspNet.NGrok.Sample.dll"]
+ENTRYPOINT ["dotnet", "FluffySpoon.AspNet.Ngrok.Sample.dll"]

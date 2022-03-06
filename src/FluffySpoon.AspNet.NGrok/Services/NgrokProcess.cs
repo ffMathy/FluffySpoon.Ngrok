@@ -1,23 +1,22 @@
 ﻿// This file is licensed to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 // Copyright (c) 2016 David Prothero
-// Pulled from Github on 2019-01-13 at https://github.com/dprothero/NGrokExtensions
+// Pulled from Github on 2019-01-13 at https://github.com/dprothero/NgrokExtensions
 
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
-using Mono.Unix;
 
-namespace FluffySpoon.AspNet.NGrok.Services
+namespace FluffySpoon.AspNet.Ngrok.Services
 {
-	public class NGrokProcess
+	public class NgrokProcess
 	{
         private readonly NgrokOptions _ngrokOptions;
         private Process _process;
 
-		public NGrokProcess(
+		public NgrokProcess(
             IApplicationLifetime applicationLifetime,
             NgrokOptions ngrokOptions)
         {
@@ -25,9 +24,9 @@ namespace FluffySpoon.AspNet.NGrok.Services
             applicationLifetime.ApplicationStopping.Register(Stop);
         }
 
-		public void StartNGrokProcess()
+		public void StartNgrokProcess()
 		{
-            var processWindowStyle = _ngrokOptions.ShowNGrokWindow ? 
+            var processWindowStyle = _ngrokOptions.ShowNgrokWindow ? 
                 ProcessWindowStyle.Normal : 
                 ProcessWindowStyle.Hidden;
 
@@ -39,7 +38,7 @@ namespace FluffySpoon.AspNet.NGrok.Services
                 WorkingDirectory = Environment.CurrentDirectory
             };
 
-            var windowsProcessStartInfo = new ProcessStartInfo("NGrok.exe", "start --none")
+            var windowsProcessStartInfo = new ProcessStartInfo("Ngrok.exe", "start --none")
             {
                 CreateNoWindow = true,
                 WindowStyle = processWindowStyle,
@@ -56,7 +55,7 @@ namespace FluffySpoon.AspNet.NGrok.Services
 
 		protected virtual void Start(ProcessStartInfo pi)
         {
-            KillExistingNGrokProcesses();
+            KillExistingNgrokProcesses();
             _process = Process.Start(pi);
         }
 
@@ -66,10 +65,10 @@ namespace FluffySpoon.AspNet.NGrok.Services
                 return;
 
             _process.Kill();
-            KillExistingNGrokProcesses();
+            KillExistingNgrokProcesses();
         }
 
-        private static void KillExistingNGrokProcesses()
+        private static void KillExistingNgrokProcesses()
         {
             foreach (var p in Process.GetProcessesByName("ngrok"))
             {

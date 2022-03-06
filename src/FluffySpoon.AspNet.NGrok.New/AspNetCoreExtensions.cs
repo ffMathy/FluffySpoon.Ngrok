@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using FluffySpoon.AspNet.Ngrok.New.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace FluffySpoon.AspNet.Ngrok.New;
 
@@ -24,7 +25,8 @@ public static class AspNetCoreExtensions
     {
         services.AddLogging();
 
-        services.AddHostedService<NgrokHostedService>();
+        services.AddSingleton<INgrokHostedService, NgrokHostedService>();
+        services.AddSingleton<IHostedService>(x => x.GetRequiredService<INgrokHostedService>());
 
         services.AddTransient<INgrokDownloader, NgrokDownloader>();
         services.AddTransient<INgrokApiClient, NgrokApiClient>();

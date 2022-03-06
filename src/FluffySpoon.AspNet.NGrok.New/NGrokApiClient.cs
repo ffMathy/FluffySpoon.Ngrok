@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using FluffySpoon.AspNet.Ngrok.New.Models;
 using Microsoft.Extensions.Logging;
@@ -18,30 +16,6 @@ public class NgrokApiClient : INgrokApiClient
     {
         _client = httpClient;
         _logger = logger;
-    }
-
-    public async Task<bool> HasTunnelAsync(string address, CancellationToken cancellationToken)
-    {
-        var tunnels = await TryGetTunnelListAsync(cancellationToken);
-        return tunnels != null && tunnels.Any(x => x.Config?.Address == address);
-    }
-
-    public async Task<Tunnel[]?> TryGetTunnelListAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var response = await _client.GetAsync("/api/tunnels", cancellationToken);
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
-            var apiResponse = JsonSerializer.Deserialize<TunnelsApiResponse>(responseText);
-            return apiResponse?.Tunnels ?? Array.Empty<Tunnel>();
-        }
-        catch (HttpRequestException)
-        {
-            return null;
-        }
     }
 
     public async Task<Tunnel> CreateTunnelAsync(

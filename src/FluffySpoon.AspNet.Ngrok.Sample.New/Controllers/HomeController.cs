@@ -1,31 +1,23 @@
-﻿using System.Diagnostics;
+﻿using FluffySpoon.AspNet.Ngrok.New;
 using Microsoft.AspNetCore.Mvc;
-using FluffySpoon.AspNet.Ngrok.Sample.New.Models;
 
 namespace FluffySpoon.AspNet.Ngrok.Sample.New.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly INgrokHostedService _ngrokService;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(
+        ILogger<HomeController> logger,
+        INgrokHostedService ngrokService)
     {
         _logger = logger;
+        _ngrokService = ngrokService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
-    }
-
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        return View(_ngrokService.ActiveTunnel);
     }
 }

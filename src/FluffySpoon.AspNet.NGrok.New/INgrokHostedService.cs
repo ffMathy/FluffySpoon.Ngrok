@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using FluffySpoon.AspNet.Ngrok.New.Models;
+using Microsoft.Extensions.Hosting;
 
 namespace FluffySpoon.AspNet.Ngrok.New;
 
 public interface INgrokHostedService : IHostedService
 {
-    Task WaitUntilReadyAsync();
+    Tunnel? ActiveTunnel { get; }
+    
+    Task WaitUntilReadyAsync(CancellationToken cancellationToken = default);
 }

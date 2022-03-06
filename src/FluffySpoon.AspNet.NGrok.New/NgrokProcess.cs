@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace FluffySpoon.AspNet.Ngrok.New;
@@ -7,13 +8,16 @@ namespace FluffySpoon.AspNet.Ngrok.New;
 public class NgrokProcess : INgrokProcess
 {
     private readonly IOptionsMonitor<NgrokOptions> _options;
-    
+    private readonly ILogger<NgrokProcess> _logger;
+
     private Process? _process;
 
     public NgrokProcess(
-        IOptionsMonitor<NgrokOptions> options)
+        IOptionsMonitor<NgrokOptions> options,
+        ILogger<NgrokProcess> logger)
     {
         _options = options;
+        _logger = logger;
     }
 
     public void Start()
@@ -22,6 +26,7 @@ public class NgrokProcess : INgrokProcess
             GetWindowsProcessStartInfo() :
             GetLinuxProcessStartInfo();
         
+        _logger.LogInformation("Starting ngrok process");
         _process = Process.Start(processInformation);
     }
 
@@ -59,6 +64,8 @@ public class NgrokProcess : INgrokProcess
 
     public void Stop()
     {
+        _logger.LogInformation("Stopping ngrok process");
+        
         _process?.Kill();
         _process = null;
     }

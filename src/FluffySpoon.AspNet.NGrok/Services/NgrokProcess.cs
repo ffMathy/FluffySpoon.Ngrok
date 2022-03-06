@@ -17,7 +17,7 @@ namespace FluffySpoon.AspNet.Ngrok.Services
         private Process _process;
 
 		public NgrokProcess(
-            IApplicationLifetime applicationLifetime,
+            IHostApplicationLifetime applicationLifetime,
             NgrokOptions ngrokOptions)
         {
             _ngrokOptions = ngrokOptions;

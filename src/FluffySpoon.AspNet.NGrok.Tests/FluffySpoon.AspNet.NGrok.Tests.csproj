@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FluffySpoon.AspNet.Ngrok.Sample.New\FluffySpoon.AspNet.Ngrok.Sample.New.csproj" />
     <ProjectReference Include="..\FluffySpoon.AspNet.Ngrok.Sample\FluffySpoon.AspNet.Ngrok.Sample.csproj" />
   </ItemGroup>
 

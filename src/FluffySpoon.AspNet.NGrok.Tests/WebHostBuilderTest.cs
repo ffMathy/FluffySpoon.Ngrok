@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluffySpoon.AspNet.Ngrok.New;
 using FluffySpoon.AspNet.Ngrok.New.Models;
+using FluffySpoon.AspNet.Ngrok.Sample.New;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
@@ -37,15 +38,7 @@ public class WebHostBuilderTest
     [TestMethod]
     public async Task CanCreateHostAndReachItViaNgrok()
     {
-        var builder = WebApplication.CreateBuilder();
-        builder.Services.AddNgrok();
-        builder.Services.AddControllersWithViews();
-        var host = Program.CreateHostBuilder(Array.Empty<string>())
-            .ConfigureWebHost(builder => builder
-                .UseKestrel()
-                .UseUrls("https://*:14569;http://*:14568"))
-            .Build();
-
+        var host = Startup.Create();
         await host.StartAsync();
 
         using var httpClient = new HttpClient();

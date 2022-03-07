@@ -11,6 +11,10 @@ public class Startup
         builder.Services.AddControllersWithViews();
 
         var app = builder.Build();
+        
+        app.Urls.Clear();
+        app.Urls.Add("http://localhost:14568");
+        
         app.UseHttpsRedirection();
         app.UseStaticFiles();
 

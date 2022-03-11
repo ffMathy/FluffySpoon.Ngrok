@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>FluffySpoon.AspNet.Ngrok.Sample</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FluffySpoon.Ngrok.AspNet\FluffySpoon.Ngrok.AspNet.csproj" />
+    </ItemGroup>
+
+</Project>

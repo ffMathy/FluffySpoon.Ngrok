@@ -331,3 +331,5 @@ ASALocalRun/
 /src/FluffySpoon.AspNet.NGrok.Sample/ngrok.exe
 *.zip
 *.deb
+
+*.exe

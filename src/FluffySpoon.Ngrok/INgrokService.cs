@@ -1,4 +1,5 @@
 ﻿using FluffySpoon.Ngrok.Models;
+using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 
@@ -11,7 +12,7 @@ public interface INgrokService
     Task InitializeAsync(CancellationToken cancellationToken = default);
 
     Task<Tunnel> StartAsync(
-        string host, 
+        Uri host, 
         CancellationToken cancellationToken = default);
 
     Task StopAsync(CancellationToken cancellationToken = default);

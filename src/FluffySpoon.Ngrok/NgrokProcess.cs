@@ -7,13 +7,13 @@ namespace FluffySpoon.Ngrok;
 
 public class NgrokProcess : INgrokProcess
 {
-    private readonly IOptionsMonitor<NgrokOptions> _options;
+    private readonly NgrokOptions _options;
     private readonly ILogger<NgrokProcess> _logger;
 
     private Process? _process;
 
     public NgrokProcess(
-        IOptionsMonitor<NgrokOptions> options,
+        NgrokOptions options,
         ILogger<NgrokProcess> logger)
     {
         _options = options;
@@ -25,14 +25,22 @@ public class NgrokProcess : INgrokProcess
         var processInformation = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             GetWindowsProcessStartInfo() :
             GetLinuxProcessStartInfo();
+
+        var existingProcess = Process.GetProcessesByName(
+            Path.GetFileNameWithoutExtension(processInformation.FileName));
+        if (existingProcess.Any())
+        {
+            _logger.LogDebug("Ngrok process is already running");
+            return;
+        }
         
-        _logger.LogInformation("Starting ngrok process");
+        _logger.LogInformation("Starting Ngrok process");
         _process = Process.Start(processInformation);
     }
 
     private ProcessWindowStyle GetProcessWindowStyle()
     {
-        return _options.CurrentValue.ShowNgrokWindow ? 
+        return _options.ShowNgrokWindow ? 
             ProcessWindowStyle.Normal : 
             ProcessWindowStyle.Hidden;
     }
@@ -68,13 +76,5 @@ public class NgrokProcess : INgrokProcess
         
         _process?.Kill();
         _process = null;
-    }
-
-    public static void KillAll()
-    {
-        foreach (var p in Process.GetProcessesByName("ngrok"))
-        {
-            p.Kill();
-        }
     }
 }

@@ -14,7 +14,7 @@ var ngrokService = serviceProvider.GetService<INgrokService>();
 
 //this downloads the Ngrok executable, starts it in 
 //the background, and opens a tunnel for the given URL
-var tunnel = await ngrokService.StartAsync("http://localhost:80");
+var tunnel = await ngrokService.StartAsync(new Uri("http://localhost:80"));
 Console.WriteLine("Ngrok tunnel URL for localhost:80 is: " + tunnel.PublicUrl);
 
 //the active tunnel can also be accessed using ngrokService.ActiveTunnel.
@@ -73,15 +73,4 @@ On the `INgrokService`, you can call a method to wait for the tunnel to be ready
 
 ```csharp
 await ngrokService.WaitUntilReadyAsync();
-```
-
-## Killing all existing Ngrok processes
-It can be a good idea to kill all existing Ngrok processes from the background when you are starting the application.
-
-Sometimes, if your application doesn't close properly, the Ngrok process may not stop properly either.
-
-To resolve this, you can run the following code.
-
-```csharp
-NgrokProcess.KillAll();
 ```

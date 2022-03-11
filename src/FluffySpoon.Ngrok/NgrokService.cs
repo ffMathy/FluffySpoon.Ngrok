@@ -1,4 +1,5 @@
 ﻿using FluffySpoon.Ngrok.Models;
+using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 
@@ -6,23 +7,23 @@ public class NgrokService : INgrokService
 {
     private readonly INgrokDownloader _downloader;
     private readonly INgrokProcess _process;
-    private readonly INgrokApiClient _apiClient;
     private readonly IEnumerable<INgrokLifetimeHook> _hooks;
+    private readonly INgrokApiClient _ngrok;
 
-    private bool _isInitialized = false;
+    private bool _isInitialized;
     
     public Tunnel? ActiveTunnel { get; private set; }
     
     public NgrokService(
         INgrokDownloader downloader,
         INgrokProcess process,
-        INgrokApiClient apiClient,
-        IEnumerable<INgrokLifetimeHook> hooks)
+        IEnumerable<INgrokLifetimeHook> hooks,
+        INgrokApiClient ngrok)
     {
         _downloader = downloader;
         _process = process;
-        _apiClient = apiClient;
         _hooks = hooks;
+        _ngrok = ngrok;
     }
     
     public async Task WaitUntilReadyAsync(CancellationToken cancellationToken = default)
@@ -43,12 +44,12 @@ public class NgrokService : INgrokService
     }
 
     public async Task<Tunnel> StartAsync(
-        string host,
+        Uri host,
         CancellationToken cancellationToken)
     {
         await InitializeAsync(cancellationToken);
         
-        var tunnel = await _apiClient.CreateTunnelAsync(
+        var tunnel = await _ngrok.CreateTunnelAsync(
             AppDomain.CurrentDomain.FriendlyName,
             host,
             cancellationToken);

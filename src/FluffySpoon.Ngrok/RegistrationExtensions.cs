@@ -3,7 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FluffySpoon.Ngrok;
 
-public static class AspNetCoreExtensions 
+public class NgrokOptions
+{
+    public bool ShowNgrokWindow { get; set; }
+    public string? ApiKey { get; set; }
+}
+
+public static class RegistrationExtensions 
 {
     public static void AddNgrokLifetimeHook(
         this IServiceCollection services, 
@@ -13,12 +19,20 @@ public static class AspNetCoreExtensions
     }
     
     public static void AddNgrok(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        NgrokOptions? options = null)
     {
         services.AddLogging();
 
         services.AddTransient<INgrokDownloader, NgrokDownloader>();
-        services.AddTransient<INgrokApiClient, NgrokApiClient>();
+        services.AddSingleton<INgrokApiClient, NgrokApiClient>();
+        
+        services.AddSingleton(options ?? new NgrokOptions());
+        services.AddSingleton(x =>
+        {
+            var ngrokOptions = x.GetRequiredService<NgrokOptions>();
+            return new NgrokApi.Ngrok(ngrokOptions.ApiKey, "http://localhost:4040/api/");
+        });
         
         services.AddSingleton<INgrokProcess, NgrokProcess>();
         services.AddSingleton<INgrokService, NgrokService>();

@@ -8,6 +8,7 @@ using FluffySpoon.Ngrok;
 using FluffySpoon.Ngrok.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NgrokApi;
 
 namespace FluffySpoon.AspNet.Ngrok.Tests;
 
@@ -40,7 +41,7 @@ public class WebHostBuilderTest
         await host.StartAsync();
 
         using var httpClient = new HttpClient();
-        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
         await ngrokService.WaitUntilReadyAsync();
@@ -63,7 +64,7 @@ public class WebHostBuilderTest
         await host.StartAsync();
 
         using var httpClient = new HttpClient();
-        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
         await ngrokService.WaitUntilReadyAsync();

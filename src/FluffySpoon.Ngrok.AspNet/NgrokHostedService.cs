@@ -21,32 +21,26 @@ public class NgrokHostedService : INgrokHostedService
         _service = service;
     }
     
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        Task.Factory.StartNew(async () =>
-        {
-            var combinedCancellationToken = CancellationTokenSource
-                .CreateLinkedTokenSource(cancellationToken, _lifetime.ApplicationStopping)
-                .Token;
-
-            await _service.InitializeAsync(combinedCancellationToken);
-
-            _lifetime.ApplicationStarted.Register(async () =>
-            {
-                var feature = _server.Features.Get<IServerAddressesFeature>();
-                if (feature == null)
-                    throw new InvalidOperationException("Ngrok requires the IServerAddressesFeature to be accessible.");
-
-                var address = feature.Addresses
-                    .Select(x => new Uri(x))
-                    .OrderByDescending(x => x.Scheme == "http" ? 1 : 0)
-                    .First()
-                    .ToString();
-                await _service.StartAsync(address, combinedCancellationToken);
-            });
-        }, cancellationToken);
+        await _service.InitializeAsync(cancellationToken);
         
-        return Task.CompletedTask;
+        var combinedCancellationToken = CancellationTokenSource
+            .CreateLinkedTokenSource(cancellationToken, _lifetime.ApplicationStopping)
+            .Token;
+
+        _lifetime.ApplicationStarted.Register(() =>
+        {
+            var feature = _server.Features.Get<IServerAddressesFeature>();
+            if (feature == null)
+                throw new InvalidOperationException("Ngrok requires the IServerAddressesFeature to be accessible.");
+
+            var address = feature.Addresses
+                .Select(x => new Uri(x))
+                .OrderByDescending(x => x.Scheme == "http" ? 1 : 0)
+                .First();
+            _service.StartAsync(address, combinedCancellationToken);
+        });
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

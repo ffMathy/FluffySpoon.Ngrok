@@ -1,41 +1,58 @@
 ﻿using System.Text;
-using System.Text.Json;
 using FluffySpoon.Ngrok.Models;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using NgrokApi;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FluffySpoon.Ngrok;
 
 public class NgrokApiClient : INgrokApiClient
 {
     private readonly HttpClient _client;
+    private readonly NgrokApi.Ngrok _ngrok;
     private readonly ILogger<NgrokApiClient> _logger;
 
     public NgrokApiClient(
         HttpClient httpClient,
+        NgrokApi.Ngrok ngrok,
         ILogger<NgrokApiClient> logger)
     {
         _client = httpClient;
+        _ngrok = ngrok;
         _logger = logger;
+    }
+
+    public async Task<Tunnel[]> GetTunnelsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _ngrok.Tunnels
+                .List()
+                .ToArrayAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     public async Task<Tunnel> CreateTunnelAsync(
         string projectName, 
-        string address,
+        Uri address,
         CancellationToken cancellationToken)
     {
-        var url = new Uri(address);
-
         var request = new CreateTunnelApiRequest()
         {
             Name = projectName,
-            Address = url.Host + ":" + url.Port,
-            Protocol = "http",
-            HostHeader = address
+            Address = address.Host + ":" + address.Port,
+            Protocol = address.Scheme,
+            HostHeader = address.ToString()
         };
 
         var json = JsonSerializer.Serialize(request);
 
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogInformation("Creating tunnel {TunnelName}", request.Name);
             
@@ -48,11 +65,11 @@ public class NgrokApiClient : INgrokApiClient
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Tunnel created");
-                return JsonSerializer.Deserialize<Tunnel>(responseText)!;
+                return JsonConvert.DeserializeObject<Tunnel>(responseText)!;
             }
 
             var error = JsonSerializer.Deserialize<ErrorResponse>(responseText);
-            _logger.LogInformation("Tunnel creation failed: {ErrorMessage}", error.Message);
+            _logger.LogInformation("Tunnel creation failed: {ErrorMessage}", error?.Message);
 
             const int errorCodeNgrokNotReadyToStartTunnels = 104;
             if (error?.ErrorCode != errorCodeNgrokNotReadyToStartTunnels)
@@ -61,7 +78,9 @@ public class NgrokApiClient : INgrokApiClient
                     $"Could not create tunnel for {projectName} ({address}): {responseText}");
             }
 
-            await Task.Delay(100);
+            await Task.Delay(25, cancellationToken);
         }
+        
+        throw new OperationCanceledException();
     }
 }

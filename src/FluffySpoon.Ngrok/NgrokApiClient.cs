@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.Http.Headers;
+using System.Text;
 using FluffySpoon.Ngrok.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -12,15 +13,18 @@ public class NgrokApiClient : INgrokApiClient
     private readonly HttpClient _client;
     private readonly NgrokApi.Ngrok _ngrok;
     private readonly ILogger<NgrokApiClient> _logger;
+    private readonly NgrokOptions _ngrokOptions;
 
     public NgrokApiClient(
         HttpClient httpClient,
         NgrokApi.Ngrok ngrok,
-        ILogger<NgrokApiClient> logger)
+        ILogger<NgrokApiClient> logger,
+        NgrokOptions ngrokOptions)
     {
         _client = httpClient;
         _ngrok = ngrok;
         _logger = logger;
+        _ngrokOptions = ngrokOptions;
     }
 
     public async Task<Tunnel[]> GetTunnelsAsync(CancellationToken cancellationToken)
@@ -55,10 +59,16 @@ public class NgrokApiClient : INgrokApiClient
         while (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogInformation("Creating tunnel {TunnelName}", request.Name);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            if(_ngrokOptions.AuthToken != null)
+            {
+                content.Headers.Add("Authorization", $"Bearer {_ngrokOptions.AuthToken}");
+            }
             
             var response = await _client.PostAsync(
                 "/api/tunnels",
-                new StringContent(json, Encoding.UTF8, "application/json"),
+                content,
                 cancellationToken);
 
             var responseText = await response.Content.ReadAsStringAsync(cancellationToken);

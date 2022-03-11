@@ -6,7 +6,7 @@ namespace FluffySpoon.Ngrok;
 public class NgrokOptions
 {
     public bool ShowNgrokWindow { get; set; }
-    public string? ApiKey { get; set; }
+    public string? AuthToken { get; set; }
 }
 
 public static class RegistrationExtensions 
@@ -31,7 +31,7 @@ public static class RegistrationExtensions
         services.AddSingleton(x =>
         {
             var ngrokOptions = x.GetRequiredService<NgrokOptions>();
-            return new NgrokApi.Ngrok(ngrokOptions.ApiKey, "http://localhost:4040/api/");
+            return new NgrokApi.Ngrok(ngrokOptions.AuthToken, "http://localhost:4040/api/");
         });
         
         services.AddSingleton<INgrokProcess, NgrokProcess>();

@@ -1,4 +1,4 @@
-﻿@model NgrokApi.Tunnel?;
+﻿@model FluffySpoon.Ngrok.Models.TunnelResponse?;
 
 @{
     ViewData["Title"] = "Home Page";
@@ -19,7 +19,7 @@
             {
                 <tr>
                     <td>
-                        @Html.Raw(Model.Endpoint.Uri)
+                        @Html.Raw(Model.Config.Address)
                     </td>
                     <td>
                         <a target="_blank" href="@Html.Raw(Model.PublicUrl)">@Html.Raw(Model.PublicUrl)</a>

@@ -1,16 +1,16 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace FluffySpoon.Ngrok.Models;
 
 public class ErrorResponse
 {
-	[JsonPropertyName("error_code")]
+	[JsonProperty("error_code")]
 	public int ErrorCode { get; set; }
 
-	[JsonPropertyName("status_code")]
+	[JsonProperty("status_code")]
 	public int StatusCode { get; set; }
 
-	[JsonPropertyName("msg")]
+	[JsonProperty("msg")]
 	public string Message { get; set; }
 
 	public Details Details { get; set; }

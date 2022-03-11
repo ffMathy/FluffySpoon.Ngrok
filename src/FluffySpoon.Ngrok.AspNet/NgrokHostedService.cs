@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace FluffySpoon.AspNet.Ngrok;
 
@@ -10,15 +11,18 @@ public class NgrokHostedService : INgrokHostedService
     private readonly IServer _server;
     private readonly IHostApplicationLifetime _lifetime;
     private readonly INgrokService _service;
+    private readonly ILogger<NgrokHostedService> _logger;
     
     public NgrokHostedService(
         IServer server,
         IHostApplicationLifetime lifetime,
-        INgrokService service)
+        INgrokService service,
+        ILogger<NgrokHostedService> logger)
     {
         _server = server;
         _lifetime = lifetime;
         _service = service;
+        _logger = logger;
     }
     
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -31,6 +35,8 @@ public class NgrokHostedService : INgrokHostedService
 
         _lifetime.ApplicationStarted.Register(() =>
         {
+            _logger.LogDebug("Application has started - will start Ngrok");
+            
             var feature = _server.Features.Get<IServerAddressesFeature>();
             if (feature == null)
                 throw new InvalidOperationException("Ngrok requires the IServerAddressesFeature to be accessible.");

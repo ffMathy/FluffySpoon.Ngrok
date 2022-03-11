@@ -1,9 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace FluffySpoon.Ngrok.Models;
 
 public class Details
 {
-    [JsonPropertyName("err")]
+    [JsonProperty("err")]
     public string ErrorMessage { get; set; }
 }

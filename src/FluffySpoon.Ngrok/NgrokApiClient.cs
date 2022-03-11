@@ -1,96 +1,114 @@
-﻿using System.Net.Http.Headers;
-using System.Text;
-using FluffySpoon.Ngrok.Models;
+﻿using FluffySpoon.Ngrok.Models;
+using Flurl.Http;
+using Flurl.Http.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NgrokApi;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FluffySpoon.Ngrok;
 
 public class NgrokApiClient : INgrokApiClient
 {
-    private readonly HttpClient _client;
-    private readonly NgrokApi.Ngrok _ngrok;
+    private readonly IFlurlClient _client;
     private readonly ILogger<NgrokApiClient> _logger;
     private readonly NgrokOptions _ngrokOptions;
 
     public NgrokApiClient(
         HttpClient httpClient,
-        NgrokApi.Ngrok ngrok,
         ILogger<NgrokApiClient> logger,
         NgrokOptions ngrokOptions)
     {
-        _client = httpClient;
-        _ngrok = ngrok;
+        _client = new FlurlClient(httpClient)
+        {
+            Settings = new ClientFlurlHttpSettings()
+            {
+                JsonSerializer = new NewtonsoftJsonSerializer(
+                    new JsonSerializerSettings()),
+                Timeout = TimeSpan.FromSeconds(10)
+            }
+        };
         _logger = logger;
         _ngrokOptions = ngrokOptions;
     }
 
-    public async Task<Tunnel[]> GetTunnelsAsync(CancellationToken cancellationToken)
+    public async Task<TunnelResponse[]> GetTunnelsAsync(CancellationToken cancellationToken)
     {
         try
         {
-            return await _ngrok.Tunnels
-                .List()
-                .ToArrayAsync(cancellationToken);
+            var tunnels = await CreateRequest("tunnels")
+                .GetJsonAsync<TunnelListResponse>(cancellationToken);
+            return tunnels.Tunnels.ToArray();
+        }
+        catch (FlurlHttpException ex)
+        {
+            _logger.LogError(ex, "Could not list tunnels");
+            throw;
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An unhandled exception occured during tunnel fetching");
             throw;
         }
     }
 
-    public async Task<Tunnel> CreateTunnelAsync(
+    public async Task<TunnelResponse> CreateTunnelAsync(
         string projectName, 
         Uri address,
         CancellationToken cancellationToken)
     {
-        var request = new CreateTunnelApiRequest()
-        {
-            Name = projectName,
-            Address = address.Host + ":" + address.Port,
-            Protocol = address.Scheme,
-            HostHeader = address.ToString()
-        };
-
-        var json = JsonSerializer.Serialize(request);
-
         while (!cancellationToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Creating tunnel {TunnelName}", request.Name);
+            _logger.LogInformation("Creating tunnel {TunnelName}", projectName);
 
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            if(_ngrokOptions.AuthToken != null)
+            try
             {
-                content.Headers.Add("Authorization", $"Bearer {_ngrokOptions.AuthToken}");
-            }
-            
-            var response = await _client.PostAsync(
-                "/api/tunnels",
-                content,
-                cancellationToken);
+                var response = await CreateRequest("tunnels")
+                    .PostJsonAsync(
+                        new CreateTunnelApiRequest()
+                        {
+                            Name = projectName,
+                            Address = address.Host + ":" + address.Port,
+                            Protocol = address.Scheme,
+                            HostHeader = address
+                                .ToString()
+                                .TrimEnd('/')
+                        },
+                        cancellationToken)
+                    .ReceiveJson<TunnelResponse>();
+                _logger.LogInformation("Tunnel {@Tunnel} created", response);
 
-            var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
-            if (response.IsSuccessStatusCode)
+                return response;
+            }
+            catch (FlurlHttpException ex)
             {
-                _logger.LogInformation("Tunnel created");
-                return JsonConvert.DeserializeObject<Tunnel>(responseText)!;
+                var error = await ex.Call.Response.GetJsonAsync<ErrorResponse>();
+
+                var isNotReadyToStartTunnels = error.ErrorCode == 104;
+                if (!isNotReadyToStartTunnels)
+                {
+                    _logger.LogError(ex, "Tunnel creation failed: {@Error}", error);
+                    throw;
+                }
+
+                _logger.LogDebug(ex, "Tunnel creation failed due to Ngrok not being ready: {@Error}", error);
+                await Task.Delay(25, cancellationToken);
             }
-
-            var error = JsonSerializer.Deserialize<ErrorResponse>(responseText);
-            _logger.LogInformation("Tunnel creation failed: {ErrorMessage}", error?.Message);
-
-            const int errorCodeNgrokNotReadyToStartTunnels = 104;
-            if (error?.ErrorCode != errorCodeNgrokNotReadyToStartTunnels)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    $"Could not create tunnel for {projectName} ({address}): {responseText}");
+                _logger.LogError(ex, "An unhandled exception occured during tunnel creation");
+                throw;
             }
-
-            await Task.Delay(25, cancellationToken);
         }
         
         throw new OperationCanceledException();
+    }
+
+    private IFlurlRequest CreateRequest(params object[] pathSegments)
+    {
+        var request = _client.Request(pathSegments);
+        if (_ngrokOptions.AuthToken != null)
+            request = request.WithOAuthBearerToken(_ngrokOptions.AuthToken);
+        
+        return request;
     }
 }

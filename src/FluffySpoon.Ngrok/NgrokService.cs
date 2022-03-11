@@ -1,4 +1,5 @@
-﻿using NgrokApi;
+﻿using FluffySpoon.Ngrok.Models;
+using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 
@@ -11,9 +12,9 @@ public class NgrokService : INgrokService
 
     private bool _isInitialized;
     
-    private readonly HashSet<Tunnel> _activeTunnels;
+    private readonly HashSet<TunnelResponse> _activeTunnels;
 
-    public IReadOnlyCollection<Tunnel> ActiveTunnels => _activeTunnels;
+    public IReadOnlyCollection<TunnelResponse> ActiveTunnels => _activeTunnels;
 
     public NgrokService(
         INgrokDownloader downloader,
@@ -26,7 +27,7 @@ public class NgrokService : INgrokService
         _hooks = hooks;
         _ngrok = ngrok;
 
-        _activeTunnels = new HashSet<Tunnel>();
+        _activeTunnels = new HashSet<TunnelResponse>();
     }
     
     public async Task WaitUntilReadyAsync(CancellationToken cancellationToken = default)
@@ -46,32 +47,47 @@ public class NgrokService : INgrokService
         _process.Start();
     }
 
-    public async Task<Tunnel> StartAsync(
+    public async Task<TunnelResponse> StartAsync(
         Uri host,
         CancellationToken cancellationToken)
     {
         await InitializeAsync(cancellationToken);
         
-        var tunnel = await _ngrok.CreateTunnelAsync(
-            AppDomain.CurrentDomain.FriendlyName,
-            host,
-            cancellationToken);
+        var tunnel = await GetOrCreateTunnelAsync(host, cancellationToken);
 
         _activeTunnels.Add(tunnel);
         
         await Task.WhenAll(_hooks
-            .Select(x => x.OnCreatedAsync(tunnel, cancellationToken)));
+            .ToArray()
+            .Select(x => x
+                .OnCreatedAsync(tunnel, cancellationToken)));
 
         return tunnel;
     }
 
+    private async Task<TunnelResponse> GetOrCreateTunnelAsync(Uri host, CancellationToken cancellationToken)
+    {
+        var existingTunnels = await _ngrok.GetTunnelsAsync(cancellationToken);
+        var existingTunnel = existingTunnels.FirstOrDefault(x => new Uri(x.Config.Address) == host);
+        if (existingTunnel != null)
+            return existingTunnel;
+        
+        return await _ngrok.CreateTunnelAsync(
+            AppDomain.CurrentDomain.FriendlyName,
+            host,
+            cancellationToken);
+    }
+
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(_activeTunnels
-            .Select(tunnel => Task.WhenAll(_hooks
-                .Select(hook => hook.OnDestroyedAsync(tunnel, cancellationToken)))));
+        var hooks = _hooks.ToArray();
+        var activeTunnels = _activeTunnels.ToArray();
 
         _process.Stop();
         _activeTunnels.Clear();
+        
+        await Task.WhenAll(activeTunnels
+            .Select(tunnel => Task.WhenAll(hooks
+                .Select(hook => hook.OnDestroyedAsync(tunnel, cancellationToken)))));
     }
 }

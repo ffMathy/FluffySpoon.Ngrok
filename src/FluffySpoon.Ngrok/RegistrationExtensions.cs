@@ -44,7 +44,7 @@ public static class RegistrationExtensions
 
         services.AddHttpClient<INgrokApiClient, NgrokApiClient>(httpClient =>
         {
-            httpClient.BaseAddress = new Uri("http://localhost:4040");
+            httpClient.BaseAddress = new Uri("http://localhost:4040/api/");
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });

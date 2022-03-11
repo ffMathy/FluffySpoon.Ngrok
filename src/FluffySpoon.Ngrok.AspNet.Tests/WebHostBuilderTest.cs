@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluffySpoon.AspNet.Ngrok.Sample;
 using FluffySpoon.Ngrok;
+using FluffySpoon.Ngrok.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NgrokApi;
@@ -14,17 +15,17 @@ namespace FluffySpoon.AspNet.Ngrok.Tests;
 
 class Hook : INgrokLifetimeHook
 {
-    public Tunnel Tunnel { get; private set; }
+    public TunnelResponse Tunnel { get; private set; }
     
     public bool IsDestroyed { get; private set; }
     
-    public Task OnCreatedAsync(Tunnel tunnel, CancellationToken cancellationToken)
+    public Task OnCreatedAsync(TunnelResponse tunnel, CancellationToken cancellationToken)
     {
         Tunnel = tunnel;
         return Task.CompletedTask;
     }
 
-    public Task OnDestroyedAsync(Tunnel tunnel, CancellationToken cancellationToken)
+    public Task OnDestroyedAsync(TunnelResponse tunnel, CancellationToken cancellationToken)
     {
         IsDestroyed = true;
         return Task.CompletedTask;
@@ -37,38 +38,42 @@ public class WebHostBuilderTest
     [TestMethod]
     public async Task CanCreateHostAndReachItViaNgrok()
     {
+        var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
+        
         await using var host = Startup.Create();
-        await host.StartAsync();
+        await host.StartAsync(timeoutToken);
 
         using var httpClient = new HttpClient();
         await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
-        await ngrokService.WaitUntilReadyAsync();
+        await ngrokService.WaitUntilReadyAsync(timeoutToken);
         
         var tunnel = ngrokService.ActiveTunnels.SingleOrDefault();
         Assert.IsNotNull(tunnel);
 
         await AssertIsUrlReachableAsync(httpClient, tunnel.PublicUrl);
 
-        await host.StopAsync();
+        await host.StopAsync(timeoutToken);
     }
     
     [TestMethod]
     public async Task TunnelCallbacksAreMadeProperly()
     {
+        var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
+        
         var hook = new Hook();
         await using var host = Startup.Create(x => x
             .AddTransient<INgrokLifetimeHook>(_ => hook));
         
         Assert.IsFalse(hook.IsDestroyed);
-        await host.StartAsync();
+        await host.StartAsync(timeoutToken);
 
         using var httpClient = new HttpClient();
         await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
-        await ngrokService.WaitUntilReadyAsync();
+        await ngrokService.WaitUntilReadyAsync(timeoutToken);
         
         var tunnel = ngrokService.ActiveTunnels.SingleOrDefault();
         Assert.IsNotNull(tunnel);
@@ -78,7 +83,7 @@ public class WebHostBuilderTest
         await AssertIsUrlReachableAsync(httpClient, tunnel.PublicUrl);
         Assert.IsFalse(hook.IsDestroyed);
 
-        await host.StopAsync();
+        await host.StopAsync(timeoutToken);
         Assert.IsTrue(hook.IsDestroyed);
     }
 

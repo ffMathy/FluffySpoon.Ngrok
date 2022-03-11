@@ -74,3 +74,14 @@ On the `INgrokService`, you can call a method to wait for the tunnel to be ready
 ```csharp
 await ngrokService.WaitUntilReadyAsync();
 ```
+
+## Killing all existing Ngrok processes
+It can be a good idea to kill all existing Ngrok processes from the background when you are starting the application.
+
+Sometimes, if your application doesn't close properly, the Ngrok process may not stop properly either.
+
+To resolve this, you can run the following code.
+
+```csharp
+NgrokProcess.KillAll();
+```

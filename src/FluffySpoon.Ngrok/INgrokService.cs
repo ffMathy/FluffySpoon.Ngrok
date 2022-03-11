@@ -1,11 +1,10 @@
-﻿using FluffySpoon.Ngrok.Models;
-using NgrokApi;
+﻿using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 
 public interface INgrokService
 {
-    Tunnel? ActiveTunnel { get; }
+    IReadOnlyCollection<Tunnel> ActiveTunnels { get; }
     
     Task WaitUntilReadyAsync(CancellationToken cancellationToken = default);
     

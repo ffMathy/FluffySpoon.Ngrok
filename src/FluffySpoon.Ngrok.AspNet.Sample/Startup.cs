@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using FluffySpoon.Ngrok;
+﻿using FluffySpoon.Ngrok;
 
 namespace FluffySpoon.AspNet.Ngrok.Sample;
 
@@ -7,9 +6,6 @@ public class Startup
 {
     public static WebApplication Create(Action<IServiceCollection>? configureServices = null)
     {
-        foreach(var process in Process.GetProcessesByName("ngrok"))
-            process.Kill();
-        
         var builder = WebApplication.CreateBuilder();
         
         builder.Services.AddNgrokHostedService(new NgrokOptions()

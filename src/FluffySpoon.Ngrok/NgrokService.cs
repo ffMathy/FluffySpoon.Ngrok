@@ -1,5 +1,4 @@
-﻿using FluffySpoon.Ngrok.Models;
-using NgrokApi;
+﻿using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 
@@ -12,8 +11,10 @@ public class NgrokService : INgrokService
 
     private bool _isInitialized;
     
-    public Tunnel? ActiveTunnel { get; private set; }
-    
+    private readonly HashSet<Tunnel> _activeTunnels;
+
+    public IReadOnlyCollection<Tunnel> ActiveTunnels => _activeTunnels;
+
     public NgrokService(
         INgrokDownloader downloader,
         INgrokProcess process,
@@ -24,11 +25,13 @@ public class NgrokService : INgrokService
         _process = process;
         _hooks = hooks;
         _ngrok = ngrok;
+
+        _activeTunnels = new HashSet<Tunnel>();
     }
     
     public async Task WaitUntilReadyAsync(CancellationToken cancellationToken = default)
     {
-        while (ActiveTunnel == null && !cancellationToken.IsCancellationRequested)
+        while (!ActiveTunnels.Any() && !cancellationToken.IsCancellationRequested)
             await Task.Delay(25, cancellationToken);
     }
 
@@ -54,7 +57,7 @@ public class NgrokService : INgrokService
             host,
             cancellationToken);
 
-        ActiveTunnel = tunnel;
+        _activeTunnels.Add(tunnel);
         
         await Task.WhenAll(_hooks
             .Select(x => x.OnCreatedAsync(tunnel, cancellationToken)));
@@ -64,13 +67,11 @@ public class NgrokService : INgrokService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (ActiveTunnel != null)
-        {
-            await Task.WhenAll(_hooks
-                .Select(x => x.OnDestroyedAsync(ActiveTunnel, cancellationToken)));
-        }
+        await Task.WhenAll(_activeTunnels
+            .Select(tunnel => Task.WhenAll(_hooks
+                .Select(hook => hook.OnDestroyedAsync(tunnel, cancellationToken)))));
 
         _process.Stop();
-        ActiveTunnel = null;
+        _activeTunnels.Clear();
     }
 }

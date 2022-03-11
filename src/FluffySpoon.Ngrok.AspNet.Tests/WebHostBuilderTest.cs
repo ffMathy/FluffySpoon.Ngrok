@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluffySpoon.AspNet.Ngrok.Sample;
 using FluffySpoon.Ngrok;
-using FluffySpoon.Ngrok.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NgrokApi;
@@ -41,16 +41,17 @@ public class WebHostBuilderTest
         await host.StartAsync();
 
         using var httpClient = new HttpClient();
-        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568");
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
         await ngrokService.WaitUntilReadyAsync();
         
-        var tunnel = ngrokService.ActiveTunnel;
-
+        var tunnel = ngrokService.ActiveTunnels.SingleOrDefault();
         Assert.IsNotNull(tunnel);
 
         await AssertIsUrlReachableAsync(httpClient, tunnel.PublicUrl);
+
+        await host.StopAsync();
     }
     
     [TestMethod]
@@ -64,12 +65,12 @@ public class WebHostBuilderTest
         await host.StartAsync();
 
         using var httpClient = new HttpClient();
-        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568");
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
         await ngrokService.WaitUntilReadyAsync();
         
-        var tunnel = ngrokService.ActiveTunnel;
+        var tunnel = ngrokService.ActiveTunnels.SingleOrDefault();
         Assert.IsNotNull(tunnel);
         
         Assert.IsNotNull(hook.Tunnel);

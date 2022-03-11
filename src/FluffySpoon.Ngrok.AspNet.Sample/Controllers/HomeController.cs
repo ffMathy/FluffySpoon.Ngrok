@@ -15,6 +15,6 @@ public class HomeController : Controller
 
     public Task<IActionResult> Index()
     {
-        return Task.FromResult<IActionResult>(View(_ngrokService.ActiveTunnel));
+        return Task.FromResult<IActionResult>(View(_ngrokService.ActiveTunnels.SingleOrDefault()));
     }
 }

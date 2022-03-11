@@ -57,7 +57,7 @@ public class WebHostBuilderTest
     private static async Task AssertIsUrlReachableAsync(HttpClient httpClient, string url)
     {
         var stopwatch = Stopwatch.StartNew();
-        while (stopwatch.Elapsed < TimeSpan.FromSeconds(60))
+        while (stopwatch.Elapsed < TimeSpan.FromSeconds(30))
         {
             try
             {
@@ -66,11 +66,12 @@ public class WebHostBuilderTest
 
                 return;
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
+                Console.WriteLine(ex);
             }
 
-            await Task.Delay(1000);
+            await Task.Delay(5000);
         }
 
         Assert.Fail("Timeout for URL " + url);

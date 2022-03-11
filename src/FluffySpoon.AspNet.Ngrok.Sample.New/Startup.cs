@@ -15,7 +15,6 @@ public class Startup
         app.Urls.Clear();
         app.Urls.Add("http://localhost:14568");
         
-        app.UseHttpsRedirection();
         app.UseStaticFiles();
 
         app.UseRouting();

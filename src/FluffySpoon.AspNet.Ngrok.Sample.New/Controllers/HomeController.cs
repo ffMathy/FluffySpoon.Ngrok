@@ -5,14 +5,11 @@ namespace FluffySpoon.AspNet.Ngrok.Sample.New.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
     private readonly INgrokHostedService _ngrokService;
 
     public HomeController(
-        ILogger<HomeController> logger,
         INgrokHostedService ngrokService)
     {
-        _logger = logger;
         _ngrokService = ngrokService;
     }
 

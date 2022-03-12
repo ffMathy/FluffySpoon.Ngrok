@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>FluffySpoon.AspNet.Ngrok.Tests</RootNamespace>
+    <RootNamespace>FluffySpoon.Ngrok.AspNet.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

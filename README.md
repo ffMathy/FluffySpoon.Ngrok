@@ -1,7 +1,8 @@
 # FluffySpoon.Ngrok
 A NuGet package used to start Ngrok programmatically and fetch the tunnel URL. Useful to enable for local development when a public URL is needed.
 
-## Usage example (console application)
+# Examples
+## Console application
 
 Add `AddNgrok` to your service registration
 
@@ -23,7 +24,7 @@ Console.WriteLine("Ngrok tunnel URL for localhost:80 is: " + tunnel.PublicUrl);
 await ngrokService.StopAsync();
 ```
 
-## Usage example (ASP .NET Core application)
+## ASP .NET Core application
 For this example, the `FluffySpoon.Ngrok.AspNet` package has to be installed.
 
 ```csharp
@@ -45,7 +46,7 @@ app.MapControllerRoute(
 await app.RunAsync();
 ```
 
-### Getting the tunnel URL
+## Getting the tunnel URL
 To get the tunnel URL in an ASP .NET Core application, you can just inject a `INgrokService` into your controller or class.
 
 ```csharp
@@ -73,4 +74,24 @@ On the `INgrokService`, you can call a method to wait for the tunnel to be ready
 
 ```csharp
 await ngrokService.WaitUntilReadyAsync();
+```
+
+## Registering lifetime hooks
+These are useful if you want to debug things like webhooks etc locally.
+
+```csharp
+class SomeLifetimeHook : INgrokLifetimeHook
+{    
+    public Task OnCreatedAsync(TunnelResponse tunnel, CancellationToken cancellationToken)
+    {
+        //TODO: do something when a tunnel has been created. for instance, here you could register a webhook for "tunnel.PublicUrl".
+        return Task.CompletedTask;
+    }
+
+    public Task OnDestroyedAsync(TunnelResponse tunnel, CancellationToken cancellationToken)
+    {
+        //TODO: do something when a tunnel has been destroyed. for instance, here you could unregister a webhook for "tunnel.PublicUrl".
+        return Task.CompletedTask;
+    }
+}
 ```

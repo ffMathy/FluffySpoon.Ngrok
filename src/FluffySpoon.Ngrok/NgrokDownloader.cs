@@ -25,28 +25,29 @@ public class NgrokDownloader : INgrokDownloader
     public async Task DownloadExecutableAsync(CancellationToken cancellationToken)
     {
         var downloadUrl = GetDownloadPath();
-        
+
         var zipFileName = $"{GetOsArchitectureString()}.zip";
         var filePath = $"{Path.Combine(Directory.GetCurrentDirectory(), zipFileName)}";
         if (!File.Exists(filePath))
         {
-            _logger.LogTrace($"Downloading {downloadUrl} to {filePath}");
+            _logger.LogTrace("Downloading {DownloadUrl} to {FilePath}", downloadUrl, filePath);
             await DownloadZipFileAsync(downloadUrl, filePath, cancellationToken);
-            _logger.LogTrace($"Downloaded {downloadUrl} to {filePath}");        }
+            _logger.LogTrace("Downloaded {DownloadUrl} to {FilePath}", downloadUrl, filePath);
+        }
 
         var ngrokFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ngrok.exe" : "ngrok";
         if (!File.Exists(ngrokFileName))
         {
-            _logger.LogTrace($"Extracting {zipFileName} to {ngrokFileName}");
-            ZipFile.ExtractToDirectory(filePath, Directory.GetCurrentDirectory());
-            _logger.LogTrace($"Extracted {zipFileName} to {ngrokFileName}");
+            _logger.LogTrace("Extracting {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
+            ZipFile.ExtractToDirectory(filePath, Directory.GetCurrentDirectory(), true);
+            _logger.LogTrace("Extracted {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
         }
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            _logger.LogTrace($"Making {ngrokFileName} executable");
+            _logger.LogTrace("Making {NgrokFileName} executable", ngrokFileName);
             await GrantNgrokFileExecutablePermissions();
-            _logger.LogTrace($"Made {ngrokFileName} executable");
+            _logger.LogTrace("Made {NgrokFileName} executable", ngrokFileName);
         }
     }
 

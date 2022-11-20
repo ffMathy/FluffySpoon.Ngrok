@@ -18,6 +18,12 @@ public static class RegistrationExtensions
         services.AddSingleton(hook);
     }
     
+    public static void AddNgrokLifetimeHook<THook>(
+        this IServiceCollection services) where THook : class, INgrokLifetimeHook
+    {
+        services.AddSingleton<INgrokLifetimeHook, THook>();
+    }
+    
     public static void AddNgrok(
         this IServiceCollection services,
         NgrokOptions? options = null)

@@ -95,3 +95,9 @@ class SomeLifetimeHook : INgrokLifetimeHook
     }
 }
 ```
+
+And you can register a lifetime hook as such:
+
+```csharp
+services.AddNgrokLifetimeHook<MyHook>();
+```

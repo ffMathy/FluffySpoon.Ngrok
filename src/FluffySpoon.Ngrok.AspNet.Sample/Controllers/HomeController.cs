@@ -1,7 +1,6 @@
-﻿using FluffySpoon.Ngrok;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace FluffySpoon.AspNet.Ngrok.Sample.Controllers;
+namespace FluffySpoon.Ngrok.AspNet.Sample.Controllers;
 
 public class HomeController : Controller
 {

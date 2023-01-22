@@ -4,14 +4,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using FluffySpoon.AspNet.Ngrok.Sample;
-using FluffySpoon.Ngrok;
+using FluffySpoon.Ngrok.AspNet.Sample;
 using FluffySpoon.Ngrok.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NgrokApi;
 
-namespace FluffySpoon.AspNet.Ngrok.Tests;
+namespace FluffySpoon.Ngrok.AspNet.Tests;
 
 class Hook : INgrokLifetimeHook
 {

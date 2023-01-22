@@ -1,10 +1,9 @@
-﻿using FluffySpoon.Ngrok;
-using Microsoft.AspNetCore.Hosting.Server;
+﻿using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace FluffySpoon.AspNet.Ngrok;
+namespace FluffySpoon.Ngrok.AspNet;
 
 public class NgrokHostedService : INgrokHostedService
 {
@@ -47,10 +46,16 @@ public class NgrokHostedService : INgrokHostedService
                 .First();
             _service.StartAsync(address, combinedCancellationToken);
         });
+        
+        _lifetime.ApplicationStopped.Register(() =>
+        {
+            _logger.LogDebug("Application has stopped - will stop Ngrok");
+            _service.StopAsync(combinedCancellationToken);
+        });
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        await _service.StopAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 }

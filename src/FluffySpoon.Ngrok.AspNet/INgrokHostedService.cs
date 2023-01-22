@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 
-namespace FluffySpoon.AspNet.Ngrok;
+namespace FluffySpoon.Ngrok.AspNet;
 
 public interface INgrokHostedService : IHostedService
 {

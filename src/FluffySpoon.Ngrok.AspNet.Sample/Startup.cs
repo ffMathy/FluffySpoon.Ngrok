@@ -1,6 +1,4 @@
-﻿using FluffySpoon.Ngrok;
-
-namespace FluffySpoon.AspNet.Ngrok.Sample;
+﻿namespace FluffySpoon.Ngrok.AspNet.Sample;
 
 public class Startup
 {

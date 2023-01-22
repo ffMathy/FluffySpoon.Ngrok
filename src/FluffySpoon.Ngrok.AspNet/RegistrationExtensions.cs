@@ -1,7 +1,6 @@
-﻿using FluffySpoon.Ngrok;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace FluffySpoon.AspNet.Ngrok;
+namespace FluffySpoon.Ngrok.AspNet;
 
 public static class RegistrationExtensions 
 {

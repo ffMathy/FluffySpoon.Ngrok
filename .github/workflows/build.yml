@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - *
+
+jobs:
+  build:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: n1hility/cancel-previous-runs@178b93a12fb2731212e48c2cc5b7e37b937fd339
+      with: 
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Checkout Github Action
+      uses: actions/checkout@master
+
+    - name: Use proper .NET version
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+      
+    - name: Run tests
+      working-directory: src
+      run: dotnet test

@@ -45,7 +45,9 @@ public class NgrokProcess : INgrokProcess
         if (process == null)
             return;
 
+        process.EnableRaisingEvents = true;
         process.ErrorDataReceived += ProcessErrorDataReceived;
+
         _process = process;
     }
 

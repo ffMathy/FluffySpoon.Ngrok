@@ -25,8 +25,9 @@ public class NgrokProcess : INgrokProcess
             ? GetWindowsProcessStartInfo()
             : GetLinuxProcessStartInfo();
 
-        var existingProcess = Process.GetProcessesByName(
-            Path.GetFileNameWithoutExtension(processInformation.FileName));
+        var existingProcess = Process.GetProcessesByName(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+            "Ngrok" :
+            "ngrok");
         if (existingProcess.Any())
         {
             _logger.LogDebug("Ngrok process ({ProcessName} is already running", processInformation.FileName);

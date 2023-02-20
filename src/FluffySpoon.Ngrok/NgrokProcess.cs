@@ -80,7 +80,9 @@ public class NgrokProcess : INgrokProcess
     private ProcessStartInfo GetLinuxProcessStartInfo()
     {
         var linuxProcessStartInfo =
-            new ProcessStartInfo("/bin/bash", "-c \"" + Directory.GetCurrentDirectory() + "/ngrok start --none\"")
+            new ProcessStartInfo(
+                Path.Combine(Directory.GetCurrentDirectory(), "ngrok"),
+                $"start --none")
             {
                 CreateNoWindow = true,
                 WindowStyle = GetProcessWindowStyle(),

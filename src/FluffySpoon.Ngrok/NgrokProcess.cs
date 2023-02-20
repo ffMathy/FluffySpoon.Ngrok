@@ -29,7 +29,7 @@ public class NgrokProcess : INgrokProcess
             Path.GetFileNameWithoutExtension(processInformation.FileName));
         if (existingProcess.Any())
         {
-            _logger.LogDebug("Ngrok process is already running");
+            _logger.LogDebug("Ngrok process ({ProcessName} is already running", processInformation.FileName);
             SetProcess(existingProcess.First());
             return;
         }

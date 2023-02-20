@@ -21,28 +21,45 @@ public class NgrokProcess : INgrokProcess
 
     public void Start()
     {
-        var processInformation = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-            GetWindowsProcessStartInfo() :
-            GetLinuxProcessStartInfo();
+        var processInformation = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? GetWindowsProcessStartInfo()
+            : GetLinuxProcessStartInfo();
 
         var existingProcess = Process.GetProcessesByName(
             Path.GetFileNameWithoutExtension(processInformation.FileName));
         if (existingProcess.Any())
         {
             _logger.LogDebug("Ngrok process is already running");
-            _process = existingProcess.First();
+            SetProcess(existingProcess.First());
             return;
         }
-        
+
         _logger.LogInformation("Starting Ngrok process");
-        _process = Process.Start(processInformation);
+
+        var process = Process.Start(processInformation);
+        SetProcess(process);
+    }
+
+    private void SetProcess(Process? process)
+    {
+        if (process == null)
+            return;
+
+        process.ErrorDataReceived += ProcessErrorDataReceived;
+        _process = process;
+    }
+
+    private void ProcessErrorDataReceived(object? sender, DataReceivedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(e.Data))
+            return;
+        
+        _logger.LogError("{Error}", e.Data);
     }
 
     private ProcessWindowStyle GetProcessWindowStyle()
     {
-        return _options.ShowNgrokWindow ? 
-            ProcessWindowStyle.Normal : 
-            ProcessWindowStyle.Hidden;
+        return _options.ShowNgrokWindow ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden;
     }
 
     private ProcessStartInfo GetWindowsProcessStartInfo()
@@ -73,8 +90,13 @@ public class NgrokProcess : INgrokProcess
     public void Stop()
     {
         _logger.LogInformation("Stopping ngrok process");
+
+        if (_process == null) 
+            return;
         
-        _process?.Kill();
+        _process.ErrorDataReceived -= ProcessErrorDataReceived;
+        _process.Kill();
+        
         _process = null;
     }
 }

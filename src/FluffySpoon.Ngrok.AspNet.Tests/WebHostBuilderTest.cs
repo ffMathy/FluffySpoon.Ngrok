@@ -34,7 +34,6 @@ class Hook : INgrokLifetimeHook
 public class WebHostBuilderTest
 {
     [TestMethod]
-    [Ignore]
     public async Task CanCreateHostAndReachItViaNgrok()
     {
         var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
@@ -57,7 +56,6 @@ public class WebHostBuilderTest
     }
     
     [TestMethod]
-    [Ignore]
     public async Task TunnelCallbacksAreMadeProperly()
     {
         var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;

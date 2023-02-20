@@ -81,7 +81,7 @@ public class NgrokProcess : INgrokProcess
     {
         var linuxProcessStartInfo =
             new ProcessStartInfo(
-                Path.Combine(Directory.GetCurrentDirectory(), "ngrok"),
+                "ngrok",
                 $"start --none")
             {
                 CreateNoWindow = true,

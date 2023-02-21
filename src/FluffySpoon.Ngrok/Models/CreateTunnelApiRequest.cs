@@ -11,8 +11,4 @@ public class CreateTunnelApiRequest
 
 	[JsonProperty("proto")] 
 	public string Protocol { get; set; } = null!;
-
-	public string Subdomain { get; set; } = null!;
-
-	public string HostHeader { get; set; } = null!;
 }

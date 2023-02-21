@@ -69,10 +69,7 @@ public class NgrokApiClient : INgrokApiClient
                         {
                             Name = projectName,
                             Address = address.Port.ToString(CultureInfo.InvariantCulture),
-                            Protocol = address.Scheme,
-                            HostHeader = address
-                                .ToString()
-                                .TrimEnd('/')
+                            Protocol = address.Scheme
                         },
                         cancellationToken)
                     .ReceiveJson<TunnelResponse>();

@@ -4,6 +4,7 @@ namespace FluffySpoon.Ngrok.Models;
 
 public class CreateTunnelApiRequest
 {
+	[JsonProperty("name")]
 	public string Name { get; set; } = null!;
 
 	[JsonProperty("addr")] 

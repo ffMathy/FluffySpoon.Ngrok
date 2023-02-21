@@ -4,6 +4,7 @@ using Flurl.Http;
 using Flurl.Http.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
@@ -24,7 +25,10 @@ public class NgrokApiClient : INgrokApiClient
             Settings = new ClientFlurlHttpSettings()
             {
                 JsonSerializer = new NewtonsoftJsonSerializer(
-                    new JsonSerializerSettings()),
+                    new JsonSerializerSettings()
+                    {
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }),
                 Timeout = TimeSpan.FromSeconds(10)
             }
         };

@@ -61,7 +61,8 @@ public class NgrokDownloader : INgrokDownloader
                 await (Cli.Wrap("sudo") | Cli.Wrap("unzip")
                     .WithArguments(args => args
                         .Add(GetCompressedDownloadFileName())
-                        .Add($"-d ."))
+                        .Add("-d")
+                        .Add("."))
                     .WithWorkingDirectory(Environment.CurrentDirectory))
                     .ExecuteAsync();
             }
@@ -71,7 +72,8 @@ public class NgrokDownloader : INgrokDownloader
                         .WithArguments(args => args
                             .Add("xvzf")
                             .Add(GetCompressedDownloadFileName())
-                            .Add($"-C ."))
+                            .Add("-C")
+                            .Add("."))
                         .WithWorkingDirectory(Environment.CurrentDirectory))
                     .ExecuteAsync();
             }

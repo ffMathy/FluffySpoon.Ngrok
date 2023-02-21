@@ -58,8 +58,9 @@ public class NgrokDownloader : INgrokDownloader
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                await (Cli.Wrap("sudo") | Cli.Wrap("unzip")
+                await (Cli.Wrap("sudo")
                     .WithArguments(args => args
+                        .Add("unzip")
                         .Add(GetCompressedDownloadFileName())
                         .Add("-d")
                         .Add("."))
@@ -68,8 +69,9 @@ public class NgrokDownloader : INgrokDownloader
             }
             else
             {
-                await (Cli.Wrap("sudo") | Cli.Wrap("tar")
+                await (Cli.Wrap("sudo")
                         .WithArguments(args => args
+                            .Add("tar")
                             .Add("xvzf")
                             .Add(GetCompressedDownloadFileName())
                             .Add("-C")

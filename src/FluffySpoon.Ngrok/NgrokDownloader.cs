@@ -28,29 +28,28 @@ public class NgrokDownloader : INgrokDownloader
         var downloadUrl = GetDownloadPath();
 
         var zipFileName = $"{GetOsArchitectureString()}{GetCompressionFileFormat()}";
-        var filePath = $"{Path.Combine(Directory.GetCurrentDirectory(), zipFileName)}";
-        if (!File.Exists(filePath))
+        if (!File.Exists(GetCompressedDownloadFileName()))
         {
-            _logger.LogTrace("Downloading {DownloadUrl} to {FilePath}", downloadUrl, filePath);
-            await DownloadFileAsync(downloadUrl, filePath, cancellationToken);
-            _logger.LogTrace("Downloaded {DownloadUrl} to {FilePath}", downloadUrl, filePath);
+            _logger.LogTrace("Downloading {DownloadUrl}", downloadUrl);
+            await DownloadFileAsync(downloadUrl, cancellationToken);
+            _logger.LogTrace("Downloaded {DownloadUrl}", downloadUrl);
         }
 
         var ngrokFileName = GetExecutableFileName();
         if (!File.Exists(ngrokFileName))
         {
             _logger.LogTrace("Extracting {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
-            await ExtractCompressedFileToCurrentDirectoryAsync(filePath);
+            await ExtractCompressedFileToCurrentDirectoryAsync();
             _logger.LogTrace("Extracted {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
         }
     }
 
-    private static async Task ExtractCompressedFileToCurrentDirectoryAsync(string filePath)
+    private static async Task ExtractCompressedFileToCurrentDirectoryAsync()
     {
         if (GetCompressionFileFormat() == ".zip")
         {
             ZipFile.ExtractToDirectory(
-                filePath,
+                GetCompressedDownloadFileName(),
                 Directory.GetCurrentDirectory(),
                 true);
         }
@@ -76,13 +75,13 @@ public class NgrokDownloader : INgrokDownloader
         }
     }
 
-    private async Task DownloadFileAsync(string downloadUrl, string filePath, CancellationToken cancellationToken)
+    private async Task DownloadFileAsync(string downloadUrl, CancellationToken cancellationToken)
     {
         var downloadResponse = await _httpClient.GetAsync(downloadUrl, cancellationToken);
         downloadResponse.EnsureSuccessStatusCode();
 
         var downloadStream = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken);
-        await using var writer = File.Create(filePath);
+        await using var writer = File.Create(GetCompressedDownloadFileName());
         await downloadStream.CopyToAsync(writer, cancellationToken);
     }
 

@@ -1,4 +1,5 @@
-﻿using FluffySpoon.Ngrok.Models;
+﻿using System.Globalization;
+using FluffySpoon.Ngrok.Models;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 using Microsoft.Extensions.Logging;
@@ -67,7 +68,7 @@ public class NgrokApiClient : INgrokApiClient
                         new CreateTunnelApiRequest()
                         {
                             Name = projectName,
-                            Address = address.Host + ":" + address.Port,
+                            Address = address.Port.ToString(CultureInfo.InvariantCulture),
                             Protocol = address.Scheme,
                             HostHeader = address
                                 .ToString()

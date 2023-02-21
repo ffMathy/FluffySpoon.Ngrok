@@ -61,6 +61,7 @@ public class NgrokDownloader : INgrokDownloader
                     .WithArguments(args => args
                         .Add(GetCompressedDownloadFileName()))
                     .WithWorkingDirectory(Environment.CurrentDirectory)
+                    .WithValidation(CommandResultValidation.None)
                     .ExecuteAsync();
             }
             else
@@ -70,6 +71,7 @@ public class NgrokDownloader : INgrokDownloader
                         .Add("xvzf")
                         .Add(GetCompressedDownloadFileName()))
                     .WithWorkingDirectory(Environment.CurrentDirectory)
+                    .WithValidation(CommandResultValidation.None)
                     .ExecuteAsync();
             }
         }

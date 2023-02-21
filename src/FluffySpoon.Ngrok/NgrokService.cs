@@ -69,8 +69,17 @@ public class NgrokService : INgrokService
 
                 await Task.WhenAll(_hooks
                     .ToArray()
-                    .Select(x => x
-                        .OnCreatedAsync(tunnel, cancellationToken)));
+                    .Select(async hook =>
+                    {
+                        try
+                        {
+                            await hook.OnCreatedAsync(tunnel, cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Ngrok cook OnCreatedAsync failed");
+                        }
+                    }));
 
                 return tunnel;
             }
@@ -112,6 +121,16 @@ public class NgrokService : INgrokService
         
         await Task.WhenAll(activeTunnels
             .Select(tunnel => Task.WhenAll(hooks
-                .Select(hook => hook.OnDestroyedAsync(tunnel, cancellationToken)))));
+                .Select(async hook =>
+                {
+                    try
+                    {
+                        await hook.OnDestroyedAsync(tunnel, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ngrok cook OnDestroyedAsync failed");
+                    }
+                }))));
     }
 }

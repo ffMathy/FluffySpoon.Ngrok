@@ -54,29 +54,27 @@ public class NgrokDownloader : INgrokDownloader
                 Directory.GetCurrentDirectory(),
                 true);
         }
-        else if(GetCompressionFileFormat() == ".tgz")
+        else if (GetCompressionFileFormat() == ".tgz")
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                await (Cli.Wrap("sudo")
+                await Cli.Wrap("unzip")
                     .WithArguments(args => args
-                        .Add("unzip")
                         .Add(GetCompressedDownloadFileName())
                         .Add("-d")
                         .Add("."))
-                    .WithWorkingDirectory(Environment.CurrentDirectory))
+                    .WithWorkingDirectory(Environment.CurrentDirectory)
                     .ExecuteAsync();
             }
             else
             {
-                await (Cli.Wrap("sudo")
-                        .WithArguments(args => args
-                            .Add("tar")
-                            .Add("xvzf")
-                            .Add(GetCompressedDownloadFileName())
-                            .Add("-C")
-                            .Add("."))
-                        .WithWorkingDirectory(Environment.CurrentDirectory))
+                await Cli.Wrap("tar")
+                    .WithArguments(args => args
+                        .Add("xvzf")
+                        .Add(GetCompressedDownloadFileName())
+                        .Add("-C")
+                        .Add("."))
+                    .WithWorkingDirectory(Environment.CurrentDirectory)
                     .ExecuteAsync();
             }
         }

@@ -25,7 +25,7 @@ public class NgrokService : INgrokService
         INgrokProcess process,
         IEnumerable<INgrokLifetimeHook> hooks,
         INgrokApiClient ngrok,
-        ILogger logger)
+        ILogger<NgrokService> logger)
     {
         _downloader = downloader;
         _process = process;

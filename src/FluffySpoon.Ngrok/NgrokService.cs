@@ -1,4 +1,7 @@
-﻿using FluffySpoon.Ngrok.Models;
+﻿using System.Net.Sockets;
+using FluffySpoon.Ngrok.Models;
+using Flurl.Http;
+using Microsoft.Extensions.Logging;
 using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
@@ -9,6 +12,7 @@ public class NgrokService : INgrokService
     private readonly INgrokProcess _process;
     private readonly IEnumerable<INgrokLifetimeHook> _hooks;
     private readonly INgrokApiClient _ngrok;
+    private readonly ILogger _logger;
 
     private bool _isInitialized;
     
@@ -20,12 +24,14 @@ public class NgrokService : INgrokService
         INgrokDownloader downloader,
         INgrokProcess process,
         IEnumerable<INgrokLifetimeHook> hooks,
-        INgrokApiClient ngrok)
+        INgrokApiClient ngrok,
+        ILogger logger)
     {
         _downloader = downloader;
         _process = process;
         _hooks = hooks;
         _ngrok = ngrok;
+        _logger = logger;
 
         _activeTunnels = new HashSet<TunnelResponse>();
     }
@@ -52,17 +58,35 @@ public class NgrokService : INgrokService
         CancellationToken cancellationToken)
     {
         await InitializeAsync(cancellationToken);
-        
-        var tunnel = await GetOrCreateTunnelAsync(host, cancellationToken);
 
-        _activeTunnels.Add(tunnel);
-        
-        await Task.WhenAll(_hooks
-            .ToArray()
-            .Select(x => x
-                .OnCreatedAsync(tunnel, cancellationToken)));
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var tunnel = await GetOrCreateTunnelAsync(host, cancellationToken);
+                _activeTunnels.Clear();
+                _activeTunnels.Add(tunnel);
 
-        return tunnel;
+                await Task.WhenAll(_hooks
+                    .ToArray()
+                    .Select(x => x
+                        .OnCreatedAsync(tunnel, cancellationToken)));
+
+                return tunnel;
+            }
+            catch (Exception ex) when (ex is FlurlHttpException
+                                       {
+                                           InnerException: HttpRequestException { InnerException: SocketException }
+                                       })
+            {
+                _logger.LogWarning(ex, "Connection to ngrok failed - will restart ngrok");
+                
+                _process.Stop();
+                _process.Start();
+            }
+        }
+
+        throw new TaskCanceledException();
     }
 
     private async Task<TunnelResponse> GetOrCreateTunnelAsync(Uri host, CancellationToken cancellationToken)

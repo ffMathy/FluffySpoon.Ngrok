@@ -54,7 +54,7 @@ public class NgrokDownloader : INgrokDownloader
                 Directory.GetCurrentDirectory(),
                 true);
         }
-        else if(GetCompressionFileFormat() == ".tar.gz")
+        else if(GetCompressionFileFormat() == ".tgz")
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -99,7 +99,7 @@ public class NgrokDownloader : INgrokDownloader
 
     private static string GetCompressionFileFormat()
     {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ".tar.gz" : ".zip";
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ".tgz" : ".zip";
     }
 
     private static string GetDownloadPath()
@@ -111,7 +111,7 @@ public class NgrokDownloader : INgrokDownloader
 
     private static string GetCompressedDownloadFileName()
     {
-        var fileName = $"Ngrok-v3-stable-{GetOsArchitectureString()}.zip";
+        var fileName = $"ngrok-v3-stable-{GetOsArchitectureString()}{GetCompressionFileFormat()}";
         return fileName;
     }
 

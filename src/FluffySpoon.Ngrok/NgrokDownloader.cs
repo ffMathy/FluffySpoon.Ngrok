@@ -60,9 +60,7 @@ public class NgrokDownloader : INgrokDownloader
             {
                 await Cli.Wrap("unzip")
                     .WithArguments(args => args
-                        .Add(GetCompressedDownloadFileName())
-                        .Add("-d")
-                        .Add("."))
+                        .Add(GetCompressedDownloadFileName()))
                     .WithWorkingDirectory(Environment.CurrentDirectory)
                     .ExecuteAsync();
             }
@@ -71,9 +69,7 @@ public class NgrokDownloader : INgrokDownloader
                 await Cli.Wrap("tar")
                     .WithArguments(args => args
                         .Add("xvzf")
-                        .Add(GetCompressedDownloadFileName())
-                        .Add("-C")
-                        .Add("."))
+                        .Add(GetCompressedDownloadFileName()))
                     .WithWorkingDirectory(Environment.CurrentDirectory)
                     .ExecuteAsync();
             }

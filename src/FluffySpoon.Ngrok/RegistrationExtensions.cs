@@ -37,7 +37,7 @@ public static class RegistrationExtensions
         services.AddSingleton(x =>
         {
             var ngrokOptions = x.GetRequiredService<NgrokOptions>();
-            return new NgrokApi.Ngrok(ngrokOptions.AuthToken, "http://127.0.0.1:4040/api/");
+            return new NgrokApi.Ngrok(ngrokOptions.AuthToken, "http://localhost:4040/api/");
         });
         
         services.AddSingleton<INgrokProcess, NgrokProcess>();
@@ -50,7 +50,7 @@ public static class RegistrationExtensions
 
         services.AddHttpClient<INgrokApiClient, NgrokApiClient>(httpClient =>
         {
-            httpClient.BaseAddress = new Uri("http://127.0.0.1:4040/api/");
+            httpClient.BaseAddress = new Uri("http://localhost:4040/api/");
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });

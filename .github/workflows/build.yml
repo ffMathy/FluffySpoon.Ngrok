@@ -7,8 +7,12 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: n1hility/cancel-previous-runs@178b93a12fb2731212e48c2cc5b7e37b937fd339

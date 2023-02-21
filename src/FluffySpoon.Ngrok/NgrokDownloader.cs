@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using CliWrap;
 using Microsoft.Extensions.Logging;
 
 namespace FluffySpoon.Ngrok;
@@ -26,32 +27,58 @@ public class NgrokDownloader : INgrokDownloader
     {
         var downloadUrl = GetDownloadPath();
 
-        var zipFileName = $"{GetOsArchitectureString()}.zip";
+        var zipFileName = $"{GetOsArchitectureString()}{GetCompressionFileFormat()}";
         var filePath = $"{Path.Combine(Directory.GetCurrentDirectory(), zipFileName)}";
         if (!File.Exists(filePath))
         {
             _logger.LogTrace("Downloading {DownloadUrl} to {FilePath}", downloadUrl, filePath);
-            await DownloadZipFileAsync(downloadUrl, filePath, cancellationToken);
+            await DownloadFileAsync(downloadUrl, filePath, cancellationToken);
             _logger.LogTrace("Downloaded {DownloadUrl} to {FilePath}", downloadUrl, filePath);
         }
 
-        var ngrokFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ngrok.exe" : "ngrok";
+        var ngrokFileName = GetExecutableFileName();
         if (!File.Exists(ngrokFileName))
         {
             _logger.LogTrace("Extracting {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
-            ZipFile.ExtractToDirectory(filePath, Directory.GetCurrentDirectory(), true);
+            await ExtractCompressedFileToCurrentDirectoryAsync(filePath);
             _logger.LogTrace("Extracted {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
-        }
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            _logger.LogTrace("Making {NgrokFileName} executable", ngrokFileName);
-            await GrantNgrokFileExecutablePermissions();
-            _logger.LogTrace("Made {NgrokFileName} executable", ngrokFileName);
         }
     }
 
-    private async Task DownloadZipFileAsync(string downloadUrl, string filePath, CancellationToken cancellationToken)
+    private static async Task ExtractCompressedFileToCurrentDirectoryAsync(string filePath)
+    {
+        if (GetCompressionFileFormat() == ".zip")
+        {
+            ZipFile.ExtractToDirectory(
+                filePath,
+                Directory.GetCurrentDirectory(),
+                true);
+        }
+        else if(GetCompressionFileFormat() == ".tar.gz")
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                await (Cli.Wrap("sudo") | Cli.Wrap("unzip")
+                    .WithArguments(args => args
+                        .Add(GetCompressedDownloadFileName())
+                        .Add($"-d ."))
+                    .WithWorkingDirectory(Environment.CurrentDirectory))
+                    .ExecuteAsync();
+            }
+            else
+            {
+                await (Cli.Wrap("sudo") | Cli.Wrap("tar")
+                        .WithArguments(args => args
+                            .Add("xvzf")
+                            .Add(GetCompressedDownloadFileName())
+                            .Add($"-C ."))
+                        .WithWorkingDirectory(Environment.CurrentDirectory))
+                    .ExecuteAsync();
+            }
+        }
+    }
+
+    private async Task DownloadFileAsync(string downloadUrl, string filePath, CancellationToken cancellationToken)
     {
         var downloadResponse = await _httpClient.GetAsync(downloadUrl, cancellationToken);
         downloadResponse.EnsureSuccessStatusCode();
@@ -61,29 +88,27 @@ public class NgrokDownloader : INgrokDownloader
         await downloadStream.CopyToAsync(writer, cancellationToken);
     }
 
-    private static async Task GrantNgrokFileExecutablePermissions()
+    public static string GetExecutableFileName()
     {
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                FileName = "/bin/bash",
-                Arguments = $"-c \"chmod +x {Directory.GetCurrentDirectory()}/ngrok\""
-            }
-        };
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ngrok.exe" : "ngrok";
+    }
 
-        process.Start();
-        await process.WaitForExitAsync();
+    private static string GetCompressionFileFormat()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ".tar.gz" : ".zip";
     }
 
     private static string GetDownloadPath()
     {
-        const string cdnPath = "c/4VmDzA7iaHb/Ngrok-stable";
-        return $"{cdnPath}-{GetOsArchitectureString()}.zip";
+        const string cdnPath = "c/bNyj1mQVY4c";
+        var fileName = GetCompressedDownloadFileName();
+        return $"{cdnPath}/{fileName}";
+    }
+
+    private static string GetCompressedDownloadFileName()
+    {
+        var fileName = $"Ngrok-v3-stable-{GetOsArchitectureString()}.zip";
+        return fileName;
     }
 
     private static string GetArchitectureString()

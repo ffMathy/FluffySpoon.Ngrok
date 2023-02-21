@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using CliWrap;
 using Microsoft.Extensions.Logging;
 
 namespace FluffySpoon.Ngrok;
@@ -21,9 +22,7 @@ public class NgrokProcess : INgrokProcess
 
     public void Start()
     {
-        var processInformation = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? GetWindowsProcessStartInfo()
-            : GetLinuxProcessStartInfo();
+        var processInformation = GetProcessStartInfo();
 
         var existingProcess = Process.GetProcessesByName(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             "Ngrok" :
@@ -65,31 +64,18 @@ public class NgrokProcess : INgrokProcess
         return _options.ShowNgrokWindow ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden;
     }
 
-    private ProcessStartInfo GetWindowsProcessStartInfo()
+    private ProcessStartInfo GetProcessStartInfo()
     {
-        var windowsProcessStartInfo = new ProcessStartInfo("Ngrok.exe", "start --none")
+        var processStartInfo = new ProcessStartInfo(
+            NgrokDownloader.GetExecutableFileName(), 
+            "start --none")
         {
             CreateNoWindow = true,
             WindowStyle = GetProcessWindowStyle(),
-            UseShellExecute = true,
+            UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
             WorkingDirectory = Environment.CurrentDirectory
         };
-        return windowsProcessStartInfo;
-    }
-
-    private ProcessStartInfo GetLinuxProcessStartInfo()
-    {
-        var linuxProcessStartInfo =
-            new ProcessStartInfo(
-                "ngrok",
-                $"start --none")
-            {
-                CreateNoWindow = true,
-                WindowStyle = GetProcessWindowStyle(),
-                UseShellExecute = false,
-                WorkingDirectory = Environment.CurrentDirectory
-            };
-        return linuxProcessStartInfo;
+        return processStartInfo;
     }
 
     public void Stop()

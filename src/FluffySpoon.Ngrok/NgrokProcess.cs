@@ -100,7 +100,9 @@ public class NgrokProcess : INgrokProcess
             return;
         
         _process.ErrorDataReceived -= ProcessErrorDataReceived;
+        
         _process.Kill();
+        _process.WaitForExit();
         
         _process = null;
     }

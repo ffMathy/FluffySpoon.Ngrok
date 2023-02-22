@@ -34,6 +34,10 @@ public class NgrokDownloader : INgrokDownloader
             await DownloadFileAsync(downloadUrl, cancellationToken);
             _logger.LogTrace("Downloaded {DownloadUrl}", downloadUrl);
         }
+        else
+        {
+            _logger.LogTrace("Ngrok compressed file has already been downloaded");
+        }
 
         var ngrokFileName = GetExecutableFileName();
         if (!File.Exists(ngrokFileName))
@@ -41,6 +45,10 @@ public class NgrokDownloader : INgrokDownloader
             _logger.LogTrace("Extracting {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
             await ExtractCompressedFileToCurrentDirectoryAsync();
             _logger.LogTrace("Extracted {ZipFileName} to {NgrokFileName}", zipFileName, ngrokFileName);
+        }
+        else
+        {
+            _logger.LogTrace("Ngrok executable already has been extracted");
         }
     }
 

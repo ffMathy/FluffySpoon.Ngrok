@@ -57,45 +57,25 @@ public class NgrokService : INgrokService
         Uri host,
         CancellationToken cancellationToken)
     {
-        await InitializeAsync(cancellationToken);
+        var tunnel = await GetOrCreateTunnelAsync(host, cancellationToken);
+        _activeTunnels.Clear();
+        _activeTunnels.Add(tunnel);
 
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
+        await Task.WhenAll(_hooks
+            .ToArray()
+            .Select(async hook =>
             {
-                var tunnel = await GetOrCreateTunnelAsync(host, cancellationToken);
-                _activeTunnels.Clear();
-                _activeTunnels.Add(tunnel);
+                try
+                {
+                    await hook.OnCreatedAsync(tunnel, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ngrok cook OnCreatedAsync failed");
+                }
+            }));
 
-                await Task.WhenAll(_hooks
-                    .ToArray()
-                    .Select(async hook =>
-                    {
-                        try
-                        {
-                            await hook.OnCreatedAsync(tunnel, cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Ngrok cook OnCreatedAsync failed");
-                        }
-                    }));
-
-                return tunnel;
-            }
-            catch (Exception ex) when (ex is FlurlHttpException
-                                       {
-                                           InnerException: HttpRequestException { InnerException: SocketException }
-                                       })
-            {
-                _logger.LogWarning(ex, "Connection to ngrok failed - will restart ngrok");
-                
-                _process.Stop();
-                _process.Start();
-            }
-        }
-
-        throw new TaskCanceledException();
+        return tunnel;
     }
 
     private async Task<TunnelResponse> GetOrCreateTunnelAsync(Uri host, CancellationToken cancellationToken)

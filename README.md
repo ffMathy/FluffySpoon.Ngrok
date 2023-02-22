@@ -13,8 +13,10 @@ services.AddNgrok();
 var serviceProvider = services.BuildServiceProvider();
 var ngrokService = serviceProvider.GetService<INgrokService>();
 
-//this downloads the Ngrok executable, starts it in 
-//the background, and opens a tunnel for the given URL
+//this downloads the Ngrok executable and starts it in the background.
+await ngrokService.InitializeAsync();
+
+//this opens a tunnel for the given URL
 var tunnel = await ngrokService.StartAsync(new Uri("http://localhost:80"));
 Console.WriteLine("Ngrok tunnel URL for localhost:80 is: " + tunnel.PublicUrl);
 

@@ -51,8 +51,6 @@ public class WebHostBuilderTest
         Assert.IsNotNull(tunnel);
 
         await AssertIsUrlReachableAsync(httpClient, tunnel.PublicUrl);
-
-        await host.StopAsync(timeoutToken);
     }
     
     [TestMethod]

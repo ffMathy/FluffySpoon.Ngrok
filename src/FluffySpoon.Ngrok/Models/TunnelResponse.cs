@@ -11,6 +11,8 @@ public class TunnelListResponse
 public class TunnelResponse : Tunnel
 {
     public TunnelConfig Config { get; set; }
+    
+    public string Name { get; set; }
 }
 
 public class TunnelConfig

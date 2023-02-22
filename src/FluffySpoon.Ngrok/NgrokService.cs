@@ -101,7 +101,7 @@ public class NgrokService : INgrokService
     private async Task<TunnelResponse> GetOrCreateTunnelAsync(Uri host, CancellationToken cancellationToken)
     {
         var existingTunnels = await _ngrok.GetTunnelsAsync(cancellationToken);
-        var existingTunnel = existingTunnels.FirstOrDefault(x => new Uri(x.Config.Address) == host);
+        var existingTunnel = existingTunnels.FirstOrDefault(x => x.Name == AppDomain.CurrentDomain.FriendlyName);
         if (existingTunnel != null)
             return existingTunnel;
         

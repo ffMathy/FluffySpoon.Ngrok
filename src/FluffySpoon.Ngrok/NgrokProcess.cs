@@ -24,13 +24,19 @@ public class NgrokProcess : INgrokProcess
     {
         var processInformation = GetProcessStartInfo();
 
-        var existingProcess = Process.GetProcessesByName(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-            "Ngrok" :
-            "ngrok");
-        if (existingProcess.Any())
+        var existingProcesses = Process
+            .GetProcessesByName(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ngrok" : "ngrok")
+            .ToArray();
+        if (existingProcesses.Any())
         {
             _logger.LogDebug("Ngrok process ({ProcessName}) is already running", processInformation.FileName);
-            SetProcess(existingProcess.First());
+            SetProcess(existingProcesses.First());
+
+            foreach (var existingProcess in existingProcesses.Skip(1))
+            {
+                existingProcess.Kill();
+            }
+
             return;
         }
 
@@ -55,7 +61,7 @@ public class NgrokProcess : INgrokProcess
     {
         if (string.IsNullOrWhiteSpace(e.Data))
             return;
-        
+
         _logger.LogError("{Error}", e.Data);
     }
 
@@ -67,7 +73,7 @@ public class NgrokProcess : INgrokProcess
     private ProcessStartInfo GetProcessStartInfo()
     {
         var processStartInfo = new ProcessStartInfo(
-            NgrokDownloader.GetExecutableFileName(), 
+            NgrokDownloader.GetExecutableFileName(),
             "start --none")
         {
             CreateNoWindow = true,
@@ -82,14 +88,14 @@ public class NgrokProcess : INgrokProcess
     {
         _logger.LogInformation("Stopping ngrok process");
 
-        if (_process == null) 
+        if (_process == null)
             return;
-        
+
         _process.ErrorDataReceived -= ProcessErrorDataReceived;
-        
+
         _process.Kill();
         _process.WaitForExit();
-        
+
         _process = null;
     }
 }

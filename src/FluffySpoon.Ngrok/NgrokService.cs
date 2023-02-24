@@ -50,7 +50,7 @@ public class NgrokService : INgrokService
         _isInitialized = true;
         
         await _downloader.DownloadExecutableAsync(cancellationToken);
-        _process.Start();
+        await _process.StartAsync();
     }
 
     public async Task<TunnelResponse> StartAsync(
@@ -96,8 +96,8 @@ public class NgrokService : INgrokService
         var hooks = _hooks.ToArray();
         var activeTunnels = _activeTunnels.ToArray();
 
-        _process.Stop();
         _activeTunnels.Clear();
+        await _process.StopAsync();
         
         await Task.WhenAll(activeTunnels
             .Select(tunnel => Task.WhenAll(hooks

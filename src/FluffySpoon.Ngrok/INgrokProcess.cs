@@ -2,6 +2,6 @@
 
 public interface INgrokProcess
 {
-    void Start();
-    void Stop();
+    Task StartAsync();
+    Task StopAsync();
 }

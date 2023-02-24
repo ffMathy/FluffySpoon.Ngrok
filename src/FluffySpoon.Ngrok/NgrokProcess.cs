@@ -10,8 +10,6 @@ public class NgrokProcess : INgrokProcess
     private readonly NgrokOptions _options;
     private readonly ILogger<NgrokProcess> _logger;
 
-    private Process? _process;
-
     public NgrokProcess(
         NgrokOptions options,
         ILogger<NgrokProcess> logger)
@@ -20,54 +18,48 @@ public class NgrokProcess : INgrokProcess
         _logger = logger;
     }
 
-    public void Start()
+    public async Task StartAsync()
     {
-        var processInformation = GetProcessStartInfo();
-
-        var existingProcesses = Process
-            .GetProcessesByName(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ngrok" : "ngrok")
-            .ToArray();
-        if (existingProcesses.Any())
-        {
-            _logger.LogDebug("Ngrok process ({ProcessName}) is already running", processInformation.FileName);
-            SetProcess(existingProcesses.First());
-
-            foreach (var existingProcess in existingProcesses.Skip(1))
-            {
-                existingProcess.Kill();
-            }
-
-            return;
-        }
+        await KillExistingProcessesAsync();
 
         _logger.LogInformation("Starting Ngrok process");
 
-        var process = Process.Start(processInformation);
-        SetProcess(process);
-    }
-
-    private void SetProcess(Process? process)
-    {
-        if (process == null)
-            return;
-
-        process.EnableRaisingEvents = true;
-        process.ErrorDataReceived += ProcessErrorDataReceived;
-
-        _process = process;
-    }
-
-    private void ProcessErrorDataReceived(object? sender, DataReceivedEventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(e.Data))
-            return;
-
-        _logger.LogError("{Error}", e.Data);
+        var processInformation = GetProcessStartInfo();
+        using var process = 
+            Process.Start(processInformation) ??
+            throw new InvalidOperationException("Could not start process");
     }
 
     private ProcessWindowStyle GetProcessWindowStyle()
     {
         return _options.ShowNgrokWindow ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden;
+    }
+
+    private async Task KillExistingProcessesAsync()
+    {
+        var existingProcesses = Process
+            .GetProcessesByName(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ngrok" : "ngrok")
+            .ToArray();
+        if (!existingProcesses.Any())
+            return;
+
+        try
+        {
+            _logger.LogDebug("Killing existing ngrok processes");
+
+            foreach (var existingProcess in existingProcesses)
+            {
+                existingProcess.Kill();
+                await existingProcess.WaitForExitAsync();
+            }
+        }
+        finally
+        {
+            foreach (var existingProcess in existingProcesses)
+            {
+                existingProcess.Dispose();
+            }
+        }
     }
 
     private ProcessStartInfo GetProcessStartInfo()
@@ -84,18 +76,8 @@ public class NgrokProcess : INgrokProcess
         return processStartInfo;
     }
 
-    public void Stop()
+    public async Task StopAsync()
     {
-        _logger.LogInformation("Stopping ngrok process");
-
-        if (_process == null)
-            return;
-
-        _process.ErrorDataReceived -= ProcessErrorDataReceived;
-
-        _process.Kill();
-        _process.WaitForExit();
-
-        _process = null;
+        await KillExistingProcessesAsync();
     }
 }

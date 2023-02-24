@@ -42,7 +42,11 @@ public class NgrokApiClient : INgrokApiClient
         {
             var tunnels = await CreateRequest("tunnels")
                 .GetJsonAsync<TunnelListResponse>(cancellationToken);
-            return tunnels.Tunnels.ToArray();
+            
+            var tunnelResponses = tunnels.Tunnels.ToArray();
+            _logger.LogTrace("Tunnels: {@Tunnels}", new object[] {tunnelResponses}); 
+
+            return tunnelResponses;
         }
         catch (FlurlHttpException ex)
         {
@@ -63,18 +67,22 @@ public class NgrokApiClient : INgrokApiClient
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            var request = new CreateTunnelApiRequest()
+            {
+                Name = projectName,
+                Address = address.Port.ToString(CultureInfo.InvariantCulture),
+                Protocol = address.Scheme
+            };
+            
             _logger.LogInformation("Creating tunnel {TunnelName}", projectName);
 
             try
             {
+                _logger.LogTrace("Sending request {@TunnelRequest}", request);
+                
                 var response = await CreateRequest("tunnels")
                     .PostJsonAsync(
-                        new CreateTunnelApiRequest()
-                        {
-                            Name = projectName,
-                            Address = address.Port.ToString(CultureInfo.InvariantCulture),
-                            Protocol = address.Scheme
-                        },
+                        request,
                         cancellationToken)
                     .ReceiveJson<TunnelResponse>();
                 _logger.LogInformation("Tunnel {@Tunnel} created", response);

@@ -100,7 +100,7 @@ public class WebHostBuilderTest
                 Console.WriteLine(ex);
             }
 
-            await Task.Delay(5000);
+            await Task.Delay(1000);
         }
 
         Assert.Fail("Timeout for URL " + url);

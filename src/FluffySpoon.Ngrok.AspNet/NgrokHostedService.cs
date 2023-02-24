@@ -11,6 +11,8 @@ public class NgrokHostedService : INgrokHostedService
     private readonly IHostApplicationLifetime _lifetime;
     private readonly INgrokService _service;
     private readonly ILogger<NgrokHostedService> _logger;
+
+    private Task? _stopTask;
     
     public NgrokHostedService(
         IServer server,
@@ -50,12 +52,20 @@ public class NgrokHostedService : INgrokHostedService
         _lifetime.ApplicationStopped.Register(() =>
         {
             _logger.LogDebug("Application has stopped - will stop Ngrok");
-            _service.StopAsync(combinedCancellationToken);
+            StopProcessAsync(combinedCancellationToken);
         });
+    }
+
+    private Task StopProcessAsync(CancellationToken combinedCancellationToken)
+    {
+        if (_stopTask != null)
+            return _stopTask;
+        
+        return _stopTask = _service.StopAsync(combinedCancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return StopProcessAsync(cancellationToken);
     }
 }

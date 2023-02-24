@@ -51,6 +51,6 @@ public class NgrokHostedService : INgrokHostedService
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("Application has stopped - will stop Ngrok");
-        return  _service.StopAsync(cancellationToken);
+        return _service.StopAsync(cancellationToken);
     }
 }

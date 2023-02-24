@@ -9,13 +9,16 @@ public class NgrokProcess : INgrokProcess
 {
     private readonly NgrokOptions _options;
     private readonly ILogger<NgrokProcess> _logger;
+    private readonly INgrokApiClient _ngrokApiClient;
 
     public NgrokProcess(
         NgrokOptions options,
-        ILogger<NgrokProcess> logger)
+        ILogger<NgrokProcess> logger,
+        INgrokApiClient ngrokApiClient)
     {
         _options = options;
         _logger = logger;
+        _ngrokApiClient = ngrokApiClient;
     }
 
     public async Task StartAsync()
@@ -28,6 +31,12 @@ public class NgrokProcess : INgrokProcess
         using var process = 
             Process.Start(processInformation) ??
             throw new InvalidOperationException("Could not start process");
+
+        var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
+        while (!await _ngrokApiClient.IsNgrokReady(cancellationToken))
+        {
+            await Task.Delay(100, cancellationToken);
+        }
     }
 
     private ProcessWindowStyle GetProcessWindowStyle()

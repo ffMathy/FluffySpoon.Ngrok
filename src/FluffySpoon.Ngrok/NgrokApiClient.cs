@@ -36,6 +36,21 @@ public class NgrokApiClient : INgrokApiClient
         _ngrokOptions = ngrokOptions;
     }
 
+    public async Task<bool> IsNgrokReady(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await CreateRequest("tunnels").GetAsync(cancellationToken);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            //ignore exceptions.
+            _logger.LogTrace(ex, "Ngrok is not ready yet");
+            return false;
+        }
+    }
+
     public async Task<TunnelResponse[]> GetTunnelsAsync(CancellationToken cancellationToken)
     {
         try

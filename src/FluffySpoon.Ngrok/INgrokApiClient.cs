@@ -11,4 +11,5 @@ public interface INgrokApiClient
         CancellationToken cancellationToken);
 
     Task<TunnelResponse[]> GetTunnelsAsync(CancellationToken cancellationToken);
+    Task<bool> IsNgrokReady(CancellationToken cancellationToken);
 }

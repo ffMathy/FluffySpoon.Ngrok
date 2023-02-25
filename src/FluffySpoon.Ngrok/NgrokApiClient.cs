@@ -115,8 +115,8 @@ public class NgrokApiClient : INgrokApiClient
                     throw;
                 }
 
-                _logger.LogDebug(ex, "Tunnel creation failed due to Ngrok not being ready: {@Error}", error);
-                await Task.Delay(25, cancellationToken);
+                _logger.LogTrace("Tunnel creation failed due to Ngrok not being ready - will retry");
+                await Task.Delay(100, cancellationToken);
             }
             catch (Exception ex)
             {

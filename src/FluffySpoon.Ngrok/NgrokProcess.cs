@@ -80,7 +80,10 @@ public class NgrokProcess : INgrokProcess
             CreateNoWindow = true,
             WindowStyle = GetProcessWindowStyle(),
             UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
-            WorkingDirectory = Environment.CurrentDirectory
+            WorkingDirectory = Environment.CurrentDirectory,
+            RedirectStandardError = false,
+            RedirectStandardOutput = false,
+            RedirectStandardInput = false
         };
         return processStartInfo;
     }

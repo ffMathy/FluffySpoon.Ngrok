@@ -117,6 +117,9 @@ public class WebHostBuilderTest
                 var response = await httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
+                var responseHtml = await response.Content.ReadAsStringAsync();
+                Assert.IsFalse(responseHtml.Contains("ERR_NGROK_"));
+
                 return;
             }
             catch (HttpRequestException ex)

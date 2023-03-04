@@ -1,17 +1,19 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FluffySpoon.Ngrok;
 
 public class NgrokProcess : INgrokProcess
 {
-    private readonly NgrokOptions _options;
+    private readonly IOptionsMonitor<NgrokOptions> _options;
     private readonly ILogger<NgrokProcess> _logger;
     private readonly INgrokApiClient _ngrokApiClient;
 
     public NgrokProcess(
-        NgrokOptions options,
+        IOptionsMonitor<NgrokOptions> options,
         ILogger<NgrokProcess> logger,
         INgrokApiClient ngrokApiClient)
     {
@@ -40,7 +42,7 @@ public class NgrokProcess : INgrokProcess
 
     private ProcessWindowStyle GetProcessWindowStyle()
     {
-        return _options.ShowNgrokWindow ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden;
+        return _options.CurrentValue.ShowNgrokWindow ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden;
     }
 
     private async Task KillExistingProcessesAsync()
@@ -72,9 +74,15 @@ public class NgrokProcess : INgrokProcess
 
     private ProcessStartInfo GetProcessStartInfo()
     {
+        var additionalArguments = "";
+        if (_options.CurrentValue.AuthToken != null)
+        {
+            additionalArguments += $"--authtoken {_options.CurrentValue.AuthToken}";
+        }
+        
         var processStartInfo = new ProcessStartInfo(
             NgrokDownloader.GetExecutableFileName(),
-            "start --none")
+            $"start --none {additionalArguments}")
         {
             CreateNoWindow = true,
             WindowStyle = GetProcessWindowStyle(),

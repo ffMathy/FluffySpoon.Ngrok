@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace FluffySpoon.Ngrok;
 
@@ -24,17 +26,32 @@ public static class RegistrationExtensions
         services.AddSingleton<INgrokLifetimeHook, THook>();
     }
     
-    public static void AddNgrok(
-        this IServiceCollection services,
-        NgrokOptions? options = null)
+    public static void AddNgrok(this IServiceCollection services, IConfiguration configuration)
+    {
+        AddNgrokInternal(services);
+        services.Configure<NgrokOptions>(configuration);
+    }
+    
+    public static void AddNgrok(this IServiceCollection services, Action<NgrokOptions> configureOptions)
+    {
+        var optionsBuilder = AddNgrokInternal(services);
+        optionsBuilder.Configure(configureOptions);
+    }
+    
+    public static void AddNgrok(this IServiceCollection services)
+    {
+        AddNgrokInternal(services);
+    }
+
+    private static OptionsBuilder<NgrokOptions> AddNgrokInternal(IServiceCollection services)
     {
         services.AddLogging();
 
         services.AddTransient<INgrokDownloader, NgrokDownloader>();
         services.AddSingleton<INgrokApiClient, NgrokApiClient>();
-        
-        services.AddSingleton(options ?? new NgrokOptions());
-        
+
+        var optionsBuilder = services.AddOptions<NgrokOptions>();
+
         services.AddSingleton<INgrokProcess, NgrokProcess>();
         services.AddSingleton<INgrokService, NgrokService>();
 
@@ -49,5 +66,6 @@ public static class RegistrationExtensions
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
+        return optionsBuilder;
     }
 }

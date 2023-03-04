@@ -42,7 +42,7 @@ public class WebHostBuilderTest
         await host.StartAsync(timeoutToken);
 
         using var httpClient = new HttpClient();
-        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/api");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
         await ngrokService.WaitUntilReadyAsync(timeoutToken);
@@ -68,7 +68,7 @@ public class WebHostBuilderTest
         await host.StartAsync(timeoutToken);
 
         using var httpClient = new HttpClient();
-        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/");
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/api");
 
         var ngrokService = host.Services.GetRequiredService<INgrokService>();
         await ngrokService.WaitUntilReadyAsync(timeoutToken);
@@ -86,11 +86,11 @@ public class WebHostBuilderTest
     }
     
     [TestMethod]
-    public async Task CanFetchHtmlFile()
+    public async Task CanFetchHtmlFileWithNgrokToken()
     {
         var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
         
-        await using var host = Startup.Create();
+        await using var host = Startup.Create(null);
         await host.StartAsync(timeoutToken);
 
         using var httpClient = new HttpClient();
@@ -118,7 +118,7 @@ public class WebHostBuilderTest
                 response.EnsureSuccessStatusCode();
 
                 var responseHtml = await response.Content.ReadAsStringAsync();
-                Assert.IsFalse(responseHtml.Contains("ERR_NGROK_"));
+                Assert.IsFalse(responseHtml.Contains("ERR_NGROK_"), "Ngrok error: " + responseHtml);
 
                 return;
             }

@@ -3,6 +3,7 @@ using FluffySpoon.Ngrok.Models;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -12,12 +13,12 @@ public class NgrokApiClient : INgrokApiClient
 {
     private readonly IFlurlClient _client;
     private readonly ILogger<NgrokApiClient> _logger;
-    private readonly NgrokOptions _ngrokOptions;
+    private readonly IOptionsMonitor<NgrokOptions> _ngrokOptions;
 
     public NgrokApiClient(
         HttpClient httpClient,
         ILogger<NgrokApiClient> logger,
-        NgrokOptions ngrokOptions)
+        IOptionsMonitor<NgrokOptions> ngrokOptions)
     {
         _client = new FlurlClient(httpClient)
         {
@@ -130,9 +131,6 @@ public class NgrokApiClient : INgrokApiClient
     private IFlurlRequest CreateRequest(params object[] pathSegments)
     {
         var request = _client.Request(pathSegments);
-        if (_ngrokOptions.AuthToken != null)
-            request = request.WithOAuthBearerToken(_ngrokOptions.AuthToken);
-        
         return request;
     }
 }

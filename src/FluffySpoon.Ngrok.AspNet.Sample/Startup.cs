@@ -4,14 +4,13 @@ namespace FluffySpoon.Ngrok.AspNet.Sample;
 
 public class Startup
 {
-    public static WebApplication Create(Action<IServiceCollection>? configureServices = null)
+    public static WebApplication Create(
+        Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder();
+        builder.Services.AddNgrokHostedService();
+        builder.Services.Configure<NgrokOptions>(builder.Configuration.GetSection("NgrokOptions"));
         
-        builder.Services.AddNgrokHostedService(new NgrokOptions()
-        {
-            ShowNgrokWindow = true
-        });
         builder.Services
             .AddControllersWithViews()
             .AddApplicationPart(typeof(Startup).Assembly);

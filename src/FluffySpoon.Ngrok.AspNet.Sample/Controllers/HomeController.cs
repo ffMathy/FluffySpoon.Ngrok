@@ -16,4 +16,13 @@ public class HomeController : Controller
     {
         return Task.FromResult<IActionResult>(View(_ngrokService.ActiveTunnels.SingleOrDefault()));
     }
+    
+    [HttpGet("api")]
+    public async Task<IActionResult> Api()
+    {
+        return Ok(new
+        {
+            Message = "Hello world"
+        });
+    }
 }

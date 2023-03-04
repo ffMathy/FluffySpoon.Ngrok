@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using CliWrap;
 using Microsoft.Extensions.Logging;
 
 namespace FluffySpoon.Ngrok;

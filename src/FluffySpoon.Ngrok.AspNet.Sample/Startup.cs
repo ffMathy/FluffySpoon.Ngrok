@@ -1,4 +1,6 @@
-﻿namespace FluffySpoon.Ngrok.AspNet.Sample;
+﻿using Microsoft.Extensions.FileProviders;
+
+namespace FluffySpoon.Ngrok.AspNet.Sample;
 
 public class Startup
 {
@@ -21,7 +23,12 @@ public class Startup
         app.Urls.Clear();
         app.Urls.Add("http://localhost:14568");
         
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions()
+        {
+            FileProvider = new EmbeddedFileProvider(
+                typeof(Startup).Assembly,
+                "FluffySpoon.Ngrok.AspNet.Sample")
+        });
 
         app.UseRouting();
 

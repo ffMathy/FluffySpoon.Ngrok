@@ -50,7 +50,9 @@ public class WebHostBuilderTest
         var tunnel = ngrokService.ActiveTunnels.SingleOrDefault();
         Assert.IsNotNull(tunnel);
 
-        await AssertIsUrlReachableAsync(httpClient, tunnel.PublicUrl);
+        await AssertIsUrlReachableAsync(httpClient, tunnel.PublicUrl);;
+
+        await host.StopAsync(timeoutToken);
     }
     
     [TestMethod]
@@ -82,6 +84,28 @@ public class WebHostBuilderTest
         await host.StopAsync(timeoutToken);
         Assert.IsTrue(hook.IsDestroyed);
     }
+    
+    [TestMethod]
+    public async Task CanFetchHtmlFile()
+    {
+        var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
+        
+        await using var host = Startup.Create();
+        await host.StartAsync(timeoutToken);
+
+        using var httpClient = new HttpClient();
+        await AssertIsUrlReachableAsync(httpClient, "http://localhost:14568/wwwroot/html-file.html");
+
+        var ngrokService = host.Services.GetRequiredService<INgrokService>();
+        await ngrokService.WaitUntilReadyAsync(timeoutToken);
+        
+        var tunnel = ngrokService.ActiveTunnels.SingleOrDefault();
+        Assert.IsNotNull(tunnel);
+
+        await AssertIsUrlReachableAsync(httpClient, $"{tunnel.PublicUrl}/wwwroot/html-file.html");
+
+        await host.StopAsync(timeoutToken);
+    }
 
     private static async Task AssertIsUrlReachableAsync(HttpClient httpClient, string url)
     {
@@ -97,7 +121,7 @@ public class WebHostBuilderTest
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"{url} ({ex.StatusCode}): {ex}");
             }
 
             await Task.Delay(1000);

@@ -34,11 +34,6 @@ public static class RegistrationExtensions
         services.AddSingleton<INgrokApiClient, NgrokApiClient>();
         
         services.AddSingleton(options ?? new NgrokOptions());
-        services.AddSingleton(x =>
-        {
-            var ngrokOptions = x.GetRequiredService<NgrokOptions>();
-            return new NgrokApi.Ngrok(ngrokOptions.AuthToken, "http://localhost:4040/api/");
-        });
         
         services.AddSingleton<INgrokProcess, NgrokProcess>();
         services.AddSingleton<INgrokService, NgrokService>();

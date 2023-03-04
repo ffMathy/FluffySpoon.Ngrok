@@ -11,4 +11,11 @@
       <ProjectReference Include="..\FluffySpoon.Ngrok.AspNet\FluffySpoon.Ngrok.AspNet.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Remove="wwwroot\html-file.html" />
+      <EmbeddedResource Include="wwwroot\html-file.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
 </Project>

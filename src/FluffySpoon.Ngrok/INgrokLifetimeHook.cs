@@ -1,5 +1,4 @@
 ﻿using FluffySpoon.Ngrok.Models;
-using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 

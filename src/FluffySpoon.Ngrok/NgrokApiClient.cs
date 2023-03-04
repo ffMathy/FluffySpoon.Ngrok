@@ -5,7 +5,6 @@ using Flurl.Http.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using NgrokApi;
 
 namespace FluffySpoon.Ngrok;
 

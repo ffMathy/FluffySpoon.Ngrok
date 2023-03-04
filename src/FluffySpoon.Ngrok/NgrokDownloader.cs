@@ -2,7 +2,6 @@
 // See the LICENSE file in the project root for more information.
 // Copyright (c) 2019 Kevin Gysberg
 
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using CliWrap;

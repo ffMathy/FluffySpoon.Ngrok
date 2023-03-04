@@ -26,3 +26,5 @@ jobs:
     - name: Run tests
       working-directory: src
       run: dotnet test
+      env:
+        NgrokOptions__AuthToken: ${{ secrets.NgrokOptionsAuthToken }}

@@ -8,7 +8,10 @@ Add `AddNgrok` to your service registration
 
 ```csharp
 var services = new ServiceCollection();
-services.AddNgrok();
+
+services.AddNgrok(options => {
+    options.AuthToken = "my auth token"; //optional - only needed if tunneling HTML
+});
 
 var serviceProvider = services.BuildServiceProvider();
 var ngrokService = serviceProvider.GetService<INgrokService>();
@@ -33,7 +36,9 @@ For this example, the `FluffySpoon.Ngrok.AspNet` package has to be installed.
 var builder = WebApplication.CreateBuilder();
 
 //this is the line that is needed to automatically start the tunnel with your ASP .NET Core application.
-builder.Services.AddNgrokHostedService();
+builder.Services.AddNgrokHostedService(options => {
+    options.AuthToken = "my auth token"; //optional - only needed if tunneling HTML
+});
 
 builder.Services.AddControllersWithViews();
 

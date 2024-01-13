@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using FluffySpoon.Ngrok.Models;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace FluffySpoon.Ngrok;
 
@@ -16,22 +16,17 @@ public class NgrokApiClient : INgrokApiClient
     private readonly IOptionsMonitor<NgrokOptions> _ngrokOptions;
 
     public NgrokApiClient(
-        HttpClient httpClient,
+        IFlurlClientCache clientCache,
         ILogger<NgrokApiClient> logger,
         IOptionsMonitor<NgrokOptions> ngrokOptions)
     {
-        _client = new FlurlClient(httpClient)
+        _client = clientCache.GetOrAdd("NgrokApi", "http://localhost:4040/api/", x =>
         {
-            Settings = new ClientFlurlHttpSettings()
+            x.Settings.JsonSerializer = new DefaultJsonSerializer(new JsonSerializerOptions
             {
-                JsonSerializer = new NewtonsoftJsonSerializer(
-                    new JsonSerializerSettings()
-                    {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }),
-                Timeout = TimeSpan.FromSeconds(10)
-            }
-        };
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+        });
         _logger = logger;
         _ngrokOptions = ngrokOptions;
     }
@@ -40,7 +35,7 @@ public class NgrokApiClient : INgrokApiClient
     {
         try
         {
-            await CreateRequest("tunnels").GetAsync(cancellationToken);
+            await CreateRequest("tunnels").GetAsync(HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             return true;
         }
         catch (Exception ex)
@@ -56,10 +51,12 @@ public class NgrokApiClient : INgrokApiClient
         try
         {
             var tunnels = await CreateRequest("tunnels")
-                .GetJsonAsync<TunnelListResponse>(cancellationToken);
-            
+                .GetJsonAsync<TunnelListResponse>(
+                    HttpCompletionOption.ResponseContentRead,
+                    cancellationToken);
+
             var tunnelResponses = tunnels.Tunnels.ToArray();
-            _logger.LogTrace("Tunnels: {@Tunnels}", new object[] {tunnelResponses}); 
+            _logger.LogTrace("Tunnels: {@Tunnels}", new object[] { tunnelResponses });
 
             return tunnelResponses;
         }
@@ -76,7 +73,7 @@ public class NgrokApiClient : INgrokApiClient
     }
 
     public async Task<TunnelResponse> CreateTunnelAsync(
-        string projectName, 
+        string projectName,
         Uri address,
         CancellationToken cancellationToken)
     {
@@ -88,16 +85,17 @@ public class NgrokApiClient : INgrokApiClient
                 Address = address.Port.ToString(CultureInfo.InvariantCulture),
                 Protocol = address.Scheme
             };
-            
+
             _logger.LogInformation("Creating tunnel {TunnelName}", projectName);
 
             try
             {
                 _logger.LogTrace("Sending request {@TunnelRequest}", request);
-                
+
                 var response = await CreateRequest("tunnels")
                     .PostJsonAsync(
                         request,
+                        HttpCompletionOption.ResponseContentRead,
                         cancellationToken)
                     .ReceiveJson<TunnelResponse>();
                 _logger.LogInformation("Tunnel {@Tunnel} created", response);
@@ -124,7 +122,7 @@ public class NgrokApiClient : INgrokApiClient
                 throw;
             }
         }
-        
+
         throw new OperationCanceledException();
     }
 

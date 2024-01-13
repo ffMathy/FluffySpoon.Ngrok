@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace FluffySpoon.Ngrok.Models;
 
 public class CreateTunnelApiRequest
 {
-	[JsonProperty("name")]
+	[JsonPropertyName("name")]
 	public string Name { get; set; } = null!;
 
-	[JsonProperty("addr")] 
+	[JsonPropertyName("addr")] 
 	public string Address { get; set; } = null!;
 
-	[JsonProperty("proto")] 
+	[JsonPropertyName("proto")] 
 	public string Protocol { get; set; } = null!;
 }

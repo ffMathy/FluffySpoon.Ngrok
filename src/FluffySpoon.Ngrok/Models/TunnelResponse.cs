@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace FluffySpoon.Ngrok.Models;
 
@@ -16,15 +16,15 @@ public class TunnelResponse
     // <summary>
     // URL of the ephemeral tunnel's public endpoint
     // </summary>
-    [JsonProperty("public_url")] public string PublicUrl { get; set; }
+    [JsonPropertyName("public_url")] public string PublicUrl { get; set; }
     // <summary>
     // tunnel protocol for ephemeral tunnels. one of <c>http</c>, <c>https</c>,
     // <c>tcp</c> or <c>tls</c>
     // </summary>
-    [JsonProperty("proto")] public string Proto { get; set; }
+    [JsonPropertyName("proto")] public string Proto { get; set; }
 }
 
 public class TunnelConfig
 {
-    [JsonProperty("addr")] public string Address { get; set; }
+    [JsonPropertyName("addr")] public string Address { get; set; }
 }

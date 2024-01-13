@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -29,7 +28,7 @@ public class NgrokProcess : INgrokProcess
         _logger.LogInformation("Starting Ngrok process");
 
         var processInformation = GetProcessStartInfo();
-        using var process = 
+        using var process =
             Process.Start(processInformation) ??
             throw new InvalidOperationException("Could not start process");
 
@@ -74,12 +73,13 @@ public class NgrokProcess : INgrokProcess
 
     private ProcessStartInfo GetProcessStartInfo()
     {
-        var additionalArguments = "";
-        if (_options.CurrentValue.AuthToken != null)
+        if (string.IsNullOrEmpty(_options.CurrentValue.AuthToken))
         {
-            additionalArguments += $"--authtoken {_options.CurrentValue.AuthToken}";
+            throw new InvalidOperationException("An auth token is required for Ngrok to work.");
         }
-        
+
+        var additionalArguments = $"--authtoken {_options.CurrentValue.AuthToken}";
+
         var processStartInfo = new ProcessStartInfo(
             NgrokDownloader.GetExecutableFileName(),
             $"start --none {additionalArguments}")

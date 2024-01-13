@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using Flurl.Http.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -8,7 +9,7 @@ namespace FluffySpoon.Ngrok;
 public class NgrokOptions
 {
     public bool ShowNgrokWindow { get; set; }
-    public string? AuthToken { get; set; }
+    public string AuthToken { get; set; }
 }
 
 public static class RegistrationExtensions 
@@ -55,17 +56,13 @@ public static class RegistrationExtensions
         services.AddSingleton<INgrokProcess, NgrokProcess>();
         services.AddSingleton<INgrokService, NgrokService>();
 
+        services.AddSingleton<IFlurlClientCache>(sp => new FlurlClientCache());
+
         services.AddHttpClient<INgrokDownloader, NgrokDownloader>(httpClient =>
         {
             httpClient.BaseAddress = new Uri("https://bin.equinox.io");
         });
-
-        services.AddHttpClient<INgrokApiClient, NgrokApiClient>(httpClient =>
-        {
-            httpClient.BaseAddress = new Uri("http://localhost:4040/api/");
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        });
+        
         return optionsBuilder;
     }
 }

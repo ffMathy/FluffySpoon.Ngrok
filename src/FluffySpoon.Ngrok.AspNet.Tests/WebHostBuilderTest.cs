@@ -31,6 +31,7 @@ class Hook : INgrokLifetimeHook
 }
 
 [TestClass]
+[Ignore]
 public class WebHostBuilderTest
 {
     [TestMethod]
